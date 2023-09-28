@@ -8,7 +8,9 @@ Description: a hybrid MMM approach built on tidymodels and McElreath's
 License: MIT + file LICENSE
 Imports: 
     dials,
+    dplyr,
     recipes,
+    rethinking,
     rlang,
     stats,
     tibble,

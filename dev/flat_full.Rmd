@@ -823,7 +823,313 @@ recipe1
 
 ```
 
+# Creating rethinking::ulam inputs
 
+```{r function-for-ulam}
+
+#' @param variable_controls Defaults to var_controls; a tibble containing start_name and varname, and sign, which is a column with constraints as '>=0' or '+'. Currently only supports >=0 or <=0, with +,- being used as alias for those.
+#' @return
+#' a list of boundary statements suitable for rethinking::ulam
+#' 
+#' @export
+#' 
+#' @example
+make_bound_statements<-function(variable_controls=var_controls){
+ 
+  bounded_coefs<-variable_controls %>% filter(!is.na(sign)) %>% rowwise() %>% mutate(
+    bound_statement =list(ifelse(sign %in% c('>=0','>0','>','+'),'lower=0',
+                                 ifelse(sign %in% c('<=0','<0','<','-'),'upper=0',sign))),
+    name_for_list=ifelse(tolower(role)=='outcome',varname,paste0('b_',varname))
+  )
+  list_of_bounds<-bounded_coefs$bound_statement
+  names(list_of_bounds)<-bounded_coefs$name_for_list
+  return(list_of_bounds)
+}
+
+#' Creates sampling statements for user defined priors on individual variables.
+#' 
+#' @param variable_controls Defaults to var_controls; a tibble containing start_name and varname, prior, and prior_sd, where the column prior is the mean of a normal dist.
+#' @return
+#' a list of sampling statements suitable for rehtinking::ulam()
+#' 
+#' @export
+#' 
+#' @example
+make_prior_statements<-function(variable_controls=var_controls){
+  prior_frame<-variable_controls %>% filter(!is.na(prior)) %>% select(varname,sign,prior,prior_sd) %>% mutate(prior_sd=ifelse(is.na(prior_sd),prior*5,prior_sd))
+  prior_frame<-prior_frame %>% rowwise() %>% mutate(coef_name=paste0("b_",varname),
+                                                    prior_def=list(as.formula(paste0("b_",varname,"~ normal(",prior,",",prior_sd,")"))))
+  
+  priors_for_ulam<-prior_frame$prior_def
+  names(priors_for_ulam)<-prior_frame$coef_name
+  return(priors_for_ulam)
+  }
+
+
+
+#' From a combination of arguments and the user specified priors, creates the final
+#' list of expressions that rethinking::ulam uses to build the stan model block.  Currently only allows additive normal model with all media transformations applied before the regression is run.  Currently only allows for random intercepts.
+#' 
+#' @param prior_controls Defaults to var_controls; a tibble containing start_name and varname, prior, and prior_sd, where the column prior is the mean of a normal dist.
+#' @param model_formula Defaults to the object built_formula; a string containing the model formula in the style of lmer.
+#' @param main_error_term_prior defaults to 'half_cauch(0,100)'; should be a sampling distribution from stan and becomes the prior on the residual error
+#' @param grand_intercept_prior defaults to 'normal(50,50)'; is a string defining a sampling distribution from stan and becomes the prior on the intercept in the regression
+#' @param random_int_stdev_prior defaults to 'half_cauchy(0,10)'; is a string defining the sampling distribution of the std deviation of any included random intercepts.  If there are two groups of 'random intercepts' this will apply to both.
+#' @param rand_int_prior_mean defaults to 65; the mean of the prior (normal) for random intercepts. If there are two groups of 'random intercepts' this will apply to both.
+#' @param unspecified_priors defaults to 'normal(0,10)'; should be a stan sampling distribution that defines the 'uninformative' prior to use when no other prior is speciied.
+#' @return
+#' a list of expressions suitable for use as the formula list in rethinking::ulam
+#' 
+#' @export
+#' 
+#' @example
+create_ulam_list<-function(prior_controls=var_controls, model_formula=built_formula,
+                           rand_int_prior_mean=65,
+                           main_error_term_prior='half_cauchy(0,100)',
+                           grand_intercept_prior= 'normal(50,50)',
+                           random_int_stdev_prior ='half_cauchy(0,10)',
+                           unspecified_priors='normal(0,10)'
+){
+  
+  #translate user defined priors
+  user_defined_priors<-make_prior_statements(variable_controls = prior_controls)
+  
+  #create list of remaining priors -- 'uninformative' priors to be used here which is just normal(0,10)
+  all_terms<-attr(terms(as.formula(model_formula)),'term.labels') 
+  all_coefs<-paste0("b_",attr(terms(as.formula(model_formula)),'term.labels') )
+  
+  #random ints, i.e. 1|<var> we need to make the prior on <var>_int[<var>_id] and the deterministic formula will be <var>_int[<var>_id]
+  random_ints0<- all_coefs[grep("1 | ",all_coefs,fixed=T)]
+  random_ints<-gsub("^.*1 \\| ","",random_ints0)
+  
+  if(length(random_ints0)>0){
+    priors_for_random_ints<-lapply(paste0(random_ints,'_int[',random_ints,'_id] ~ normal(',rand_int_prior_mean,',int_sigma)'),as.formula)
+    names(priors_for_random_ints)<-random_ints
+  }else{
+    priors_for_random_ints=list()
+  }
+  #TODO: random slopes?
+  
+  #get diffuse priors on fixed effects not specified by user
+  fixed_coefs<-all_coefs[!(all_coefs %in% random_ints0)]
+  fixed_terms<-all_terms[!(all_coefs %in% random_ints0)]
+  
+  
+  fixed_coefs_needing_priors<-fixed_coefs[!(fixed_coefs %in% names(user_defined_priors))]
+  
+  priors_for_fixed<-lapply(paste0(fixed_coefs_needing_priors,"~",unspecified_priors),as.formula)
+  names(priors_for_fixed)<-fixed_coefs_needing_priors
+  
+  main_model_formula<-as.formula(paste0(as.character(as.formula(model_formula))[2],'~ normal(big_model,big_sigma)'))
+  #prior on big_sigma
+  prior_on_big_sigma<-as.formula(paste('big_sigma ~ ',main_error_term_prior))
+  #prior on grand intercept
+  prior_on_a0<-as.formula(paste('a0 ~ ',grand_intercept_prior))
+  
+  #prior_on_store_ints_spread
+  prior_on_store_int_sigma<-as.formula(paste('int_sigma ~',random_int_stdev_prior))
+  
+  #more than around 15 terms to sum for the expected value in the model, need to split it rethinking::ulam builds an incorrect stan file.
+  
+
+  number_of_terms<-length(all_terms)
+  rand_ints_formula_for_ulam<-  ifelse(length(random_ints0)>0,                                       paste(paste0(random_ints,"_int[",random_ints,"_id]"),collapse='+'),
+                                       '')
+    number_of_fixed<-number_of_terms-length(rand_ints_formula_for_ulam[rand_ints_formula_for_ulam!=''])
+  
+  big_model_list<-vector('list')
+  included_terms=0
+  start_term=1
+  last_end_term=15
+  iter_of_big_model=1
+  while(start_term<=number_of_fixed){
+    
+    this_end_term=min(last_end_term,number_of_fixed)
+    if(iter_of_big_model==1){
+      big_model_list[[iter_of_big_model]]<- paste(paste0('big_model_',iter_of_big_model,' <-'),paste(fixed_coefs[start_term:this_end_term],
+                                                                                  fixed_terms[start_term:this_end_term],sep='*',collapse='+'))
+    }
+    else{
+      big_model_list[[iter_of_big_model]]<-paste(paste0('big_model_',iter_of_big_model,' <- big_model_',iter_of_big_model-1,' + '),paste(fixed_coefs[start_term:this_end_term],
+                                                                                               fixed_terms[start_term:this_end_term],sep='*',collapse='+'))
+    }
+    start_term=this_end_term+1
+    last_end_term=this_end_term+15
+    iter_of_big_model=iter_of_big_model+1
+  }
+  if(rand_ints_formula_for_ulam!='')
+  {big_model_list[[iter_of_big_model]]<-paste(paste0('big_model <- big_model_',iter_of_big_model-1),'a0',rand_ints_formula_for_ulam,sep='+')}else
+  {big_model_list[[iter_of_big_model]]<-paste(paste0('big_model <- big_model_',iter_of_big_model-1),'a0',sep='+')}
+  
+  #to have expressions in the final list, need to prase the strings in big_modl
+  big_model_list_parsed<-sapply(big_model_list,function(x) parse(text=x))
+  
+  formula_list<-c(main_model_formula,rev(big_model_list_parsed),priors_for_random_ints,priors_for_fixed,user_defined_priors,prior_on_a0,prior_on_big_sigma,prior_on_store_int_sigma)
+  
+  class(formula_list)<-'list'
+  return(formula_list)
+}
+
+#'a prediction function for ulam objects, as comes from rethinking::ulam
+#'
+#'@param ulamobj the out of rethinking::ulam
+#'@param new_data the dataset on which to draw samples and make predictions
+#'@param n the number of samples to draw
+#'@param reduce defuaults to TRUE; a boolean that indicates if the samples should be returned or a mean and high credibility interval
+#'@param conf defaults to .95, indicates the desired converage of credibility interval when reduce=T
+#'
+#'@return
+#'if reduce=T a tibble with pred, pred_lower_conf, pred_upper_conf columns
+#'else if reduce =F the output of link (a matrix with sampled predictions)
+#'
+#'@export
+#'@export predict.ulam
+#'@importFrom rethinking link
+#'@importFrom stats predict
+predict.ulam<-function(ulamobj,new_data,n=1000,reduce=T,conf=.95){
+  link_output<-link(ulamobj,new_data=new_data,n=n)$big_model
+  if(reduce){
+    preds<-colMeans(link_output)
+    low_conf<-apply(link_output,2,quantile,1-conf)
+    high_conf<-apply(link_output,2,quantile,conf)
+    pred_output<-cbind(preds,low_conf,high_conf)
+    colnames(pred_output)<-c('pred',paste0('pred_lower_',conf),paste0('pred_upper_',conf))
+  }
+  return(pred_output)
+}
+
+#'pulls predictor variable names from a recipe except those that have role2 %in% c('group','time')
+#'
+#'@param base_recipe defaults to recipe3; is the recipe to pull predictor names from
+#'
+#'@export
+#'
+#'@importFrom dplyr filter
+#'
+#'@return a vector of variablnames that have role == 'predictor'
+#'
+#'@example
+get_predictors_vector<-function(base_recipe=recipe3){
+  groups_and_time<-unlist(summary(base_recipe) %>% filter(role %in% c('group','time')) %>% select(variable))
+  
+  predictors<-unlist(summary(base_recipe) %>% 
+                       filter(role=='predictor') %>% select(variable))
+  
+  return(predictors[!(predictors %in% groups_and_time)])
+}
+
+#' Pulls values from the control tibble by name; convenience function for working with the control tibble.
+#' 
+#' @param this_control is the string containing the control of interest
+#' @param control defaults to workflow_controls; is a tibble containing columns R_name and Value, 
+#' @return
+#' The value of control$Value when control$R_name==this_control; typically will be a character, frequently requires coercion to other types.
+#' @export
+#' @importFrom dplyr filter
+get_control<-function(this_control,control=workflow_controls){
+  if(length(this_control)==0){stop("get_control requires this_control to be non-null")}
+  control %>% filter(R_name==!!this_control) %>% select(Value) %>% unlist()
+}
+
+
+#' Creates a string that represents a model formula from a recipe and the workflow controls data
+#' 
+#' @param base_recipe defaults to recipe3; is the recipe containing variables to build a formula for
+#' @param control defaults to workflow_controls, should be a tibble with columns R_name and Value, which must have rows with R_name =='Y','list_rand_ints' and 'fft_terms'
+#' @return
+#' a string that reads like an lmer formula
+#' @export
+#' 
+#' @example
+create_formula<-function(base_recipe=recipe3,control=workflow_controls){
+  #we will remove grouping vars (used for random effects) and time series stuff (for now)
+  
+  final_predictors<-get_predictors_vector(base_recipe=base_recipe)
+  outcome<-get_control(this_control='Y',control=control)  
+  fft_terms<-get_control("fft_terms",control=control) %>% as.numeric()
+  
+  fft_formula<-""
+  
+  if(fft_terms>0){
+    for(i in 1:fft_terms){
+      if (i==1){fft_formula= '+ sin1 + cos1'}
+      else{
+        fft_formula=paste(fft_formula,paste(c('cos','sin'),i,sep='',collapse='+'),sep='+')
+      }}}
+  
+  list_rand_ints<-gsub(" ","",get_control("list_rand_ints",control=control),fixed=T) %>% strsplit(',',fixed=T) %>% unlist()
+  list_rand_ints<-list_rand_ints[!is.na(list_rand_ints)]
+  
+  rand_int_formula<-""
+  if(length(list_rand_ints)>0){
+    for (int in list_rand_ints){
+      if(length(rand_int_formula)==0){rand_int_formula<-paste0('+ (1|',int,')')}
+      else{rand_int_formula=paste(rand_int_formula,paste0('(1|',int,')'),sep='+')}
+    }
+  }
+  
+  built_formula<-paste0(outcome,' ~ ',paste(final_predictors,collapse='+'),
+                        fft_formula,rand_int_formula)
+  return(built_formula)
+}
+
+
+```
+
+
+```{r examples-rehtinking-ulam-related-functions}
+library(recipes)
+library(tune)
+library(tidyverse)
+library(mostlytidyMMM)
+
+#get the control file:
+control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
+#get each relevant table of the control file:
+var_controls<-readxl::read_xlsx(control_file,'variables')
+transform_controls<-readxl::read_xlsx(control_file,'role controls')
+workflow_controls<-readxl::read_xlsx(control_file,"workflow") %>% select(-desc)
+
+#pull data, add fourier transform columns
+data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) %>%  mutate(week=as.Date(week,"%m/%d/%Y")) %>% 
+  mutate(across(c(product),as.factor)) %>% group_by(product,store) %>% arrange(product,store,week) %>% 
+  mutate(day_int=as.numeric(week),
+         cos1=cos(2*pi*day_int/356),
+         cos2=cos(4*pi*day_int/356),
+         cos3 =cos(6*pi*day_int/356),
+         cos4 = cos(8*pi*day_int/356),
+         cos5 = cos(10*pi*day_int/356),
+         sin1=sin(2*pi*day_int/356),
+         sin2=sin(4*pi*day_int/356),
+         sin3=sin(6*pi*day_int/356),
+         sin4=sin(8*pi*day_int/356),
+         sin5=sin(10*pi*day_int/356)) %>% select(-day_int) %>% mutate(store=as.factor(store))
+
+#append several more columns
+lotsa_vars<-paste0('x',1:60)
+new_x<-replicate(60,runif(nrow(data1))) 
+names(new_x)<-lotsa_vars
+new_x<-as_tibble(new_x)
+#bring the data together:
+data_for_lotsa_vars<-cbind(data1 ,new_x)
+
+#make recipes
+recipea<-recipe(head(data_for_lotsa_vars,n=1) )
+recipeb<-recipea %>% bulk_update_role() %>% bulk_add_role()
+recipeb<-recipeb %>% add_steps_media() %>%  step_select(-has_role('postprocess'))
+recipec <-recipeb %>% step_mutate(week=as.numeric(week)-19247.65) %>% 
+  update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') %>%
+  add_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='predictor')
+recipec<-recipec %>% update_role(starts_with('x'),new_role='predictor')
+
+# build a model formula in the lmer style from the recipe:
+(formula_with_lotsa_vars<-create_formula(recipec))
+
+#build a list suitable for input to rethinking::ulam from the formula and recipe:
+(create_ulam_list(model_formula=formula_with_lotsa_vars))
+
+
+```
 
 <!--
 # There can be development actions
