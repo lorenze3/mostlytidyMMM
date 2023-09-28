@@ -16,6 +16,7 @@ Imports:
     tibble,
     tune
 Suggests: 
+    covr,
     knitr,
     readxl,
     rmarkdown,
