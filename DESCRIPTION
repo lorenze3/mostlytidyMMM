@@ -25,6 +25,7 @@ VignetteBuilder:
     knitr
 Remotes: 
     rmcelreath/rethinking
+	stan-dev/cmdstanr
 Config/fusen/version: 0.5.2.9000
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
