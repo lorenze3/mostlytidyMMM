@@ -1,0 +1,16 @@
+flat_full.Rmd:
+  path: dev/flat_full.Rmd
+  state: active
+  R:
+  - R/bulk_update_role.R
+  - R/make_bound_statements.R
+  - R/step_saturation.R
+  tests: tests/testthat/test-step_saturation.R
+  vignettes: vignettes/get-started.Rmd
+  inflate:
+    flat_file: dev/flat_full.Rmd
+    vignette_name: Get started
+    open_vignette: true
+    check: true
+    document: true
+    overwrite: ask

@@ -21,7 +21,8 @@ fusen::fill_description(
     `Authors@R` = c(
       person("Lorenzen", "Ted", email = "lorenze3@gmail.com", role = c("aut", "cre")
     )
-  )
+  ),
+  Remotes = 'rmcelreath/rethinking'
 ),
 overwrite=T
 )

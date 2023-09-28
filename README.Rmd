@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/lorenze3/mostlytidyMMM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/lorenze3/mostlytidyMMM?branch=main)
 <!-- badges: end -->
 
-The goal of mostlytidyMMM is to ...
+mostlytidyMMM is a toolkit for building a marketing mix model.  tidymodels provides the hyperparameter tuning and McElreath's rethinking builds a link to Stan to constrained, prior informed regression modeling.
 
 ## Installation
 

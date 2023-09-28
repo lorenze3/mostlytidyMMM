@@ -826,7 +826,7 @@ recipe1
 # Creating rethinking::ulam inputs
 
 ```{r function-for-ulam}
-
+#' converts sign constraints in the variable configuration table to rethinking::ulam ready constraints.
 #' @param variable_controls Defaults to var_controls; a tibble containing start_name and varname, and sign, which is a column with constraints as '>=0' or '+'. Currently only supports >=0 or <=0, with +,- being used as alias for those.
 #' @return
 #' a list of boundary statements suitable for rethinking::ulam
