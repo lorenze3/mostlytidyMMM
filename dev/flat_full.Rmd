@@ -1,0 +1,855 @@
+---
+title: "flat_rmd for mostlytidyMMM"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- Run this 'development' chunk -->
+<!-- Store every call to library() that you need to explore your functions -->
+
+```{r development, include=FALSE}
+library(testthat)
+library(tidymodels)
+library(recipes)
+library(rethinking)
+library(workflowsets)
+library(tune)
+library(tidyverse)
+```
+
+<!--
+ You need to run the 'description' chunk in the '0-dev_history.Rmd' file before continuing your code there.
+
+If it is the first time you use {fusen}, after 'description', you can directly run the last chunk of the present file with inflate() inside.
+--> 
+
+# Include some data examples in your package
+
+<!-- 
+ Store your dataset in a directory named "inst/" at the root of your project.
+ Use it for your tests in this Rmd thanks to `pkgload::load_all()` to make it available
+and `system.file()` to read it in your examples.
+-->
+
+```{r development-2}
+# Run all this chunk in the console directly
+# Create "inst/" directory
+# dir.create(here::here("inst"))
+# 
+# # Example dataset
+# file.copy(system.file("nyc_squirrels_sample.csv", package = "fusen"), here::here("inst"))
+# # Make your dataset file available to the current Rmd
+# pkgload::load_all(path = here::here(), export_all = FALSE)
+# 
+# # You will be able to read your example data file in each of your function examples and tests as follows
+# datafile <- system.file("nyc_squirrels_sample.csv", package = "mostlytidyMMM")
+# nyc_squirrels <- read.csv(datafile)
+# 
+# nyc_squirrels
+```
+
+
+# custom recipe steps 
+
+<!--
+Create a chunk for the core of the function
+
+- The chunk needs to be named `function` at least
+- It contains the code of a documented function
+- The chunk can also be named `function-my_median` to make it easily
+findable in your Rmd
+- Let the `@examples` part empty, and use the next `examples` chunk instead
+
+After inflating the template
+
+-  This function code will be added in a new file in the "R/" directory
+-->
+
+```{r function-step-sat-1}
+# #' working around some fusen issue; re-exporting bake to this namespace
+# #' @export
+# bake<-recipes::bake
+# 
+# #' working around some fusen issue; re-exporting bake to this namespace
+# #' @export
+# prep<-recipes::prep
+# 
+# #' working around some fusen issue; re-exporting bake to this namespace
+# #' @export
+# tunable<-tune::tunable
+
+
+#' function to add saturation trasnformations to a recipe
+#'
+#' @param recipe a recipes::recipe
+#' @param ... variables in recipe to be effected by the step
+#' @param role defaults to NA, set to a string to change the role of the transformed variables
+#' @param asymptote defaults to 100, the asymptotic value of the saturation transformed variable
+#' @param saturation_speed defaults to .05, controls how quickly the asymptote is approached
+#' @param id default value will work most often, but can be set manually for use with tuning fuctions
+#'
+#' @return
+#' a recipe with the new saturation step appended
+#' @export
+#'
+#' @examples
+step_saturation <- function(
+    recipe, 
+    ..., 
+    role = NA, 
+    trained = FALSE, 
+    options = list( names = TRUE),
+    skip = FALSE,
+    asymptote=100,
+    saturation_speed=.05,
+    hills=NULL,
+    id = rand_id("saturation")
+) {
+  
+  add_step(
+    recipe, 
+    step_saturation_new(
+      terms = enquos(...), 
+      trained = trained,
+      role = role, 
+      options = options,
+      skip = skip,
+      id = id,
+      asymptote=asymptote,
+      saturation_speed=saturation_speed,
+      hills=hills
+    )
+  )
+}
+
+#' internal function used in create recipe steps
+#'
+#'
+#' @return
+#' a recipe sep of type saturation
+#' @export
+step_saturation_new <- 
+  function(terms, role, trained, asymptote,saturation_speed,hills, options, skip, id) {
+    step(
+      subclass = "saturation", 
+      terms = terms,
+      role = role,
+      trained = trained,
+      asymptote=asymptote,
+      saturation_speed=saturation_speed,
+      hills=hills,
+      options = options,
+      skip = skip,
+      id = id
+    )
+  }
+
+#' a monotonic saturation function with monotonic first deriviate used in recipes for preprocssing MMM data
+#' 
+#' @param x vector of numeric value to saturate
+#' @param asymptote the asymptote of the transformed values; should probably exceed the max value in the modeled data
+#' @param saturation_speed higher values approach the asymptote faster
+#'
+#'
+#' @return
+#' a numeric vector of transformed values
+#' @export
+#worker bee function
+get_train_saturation<-function(x,asymptote,saturation_speed){
+  stopifnot(length(asymptote) == 1)
+  stopifnot(length(saturation_speed) == 1)
+  x_scurve<-asymptote*(1-exp(-saturation_speed*x))
+  
+  return(x_scurve)
+}
+
+#' The saturation step prep method
+#' 
+#' @param x an object (step or recipe)
+#' @param training  tibble used to provide data for training
+#' 
+#' @return
+#' a prepped recipe or step
+#' @export
+#' @export prep.step_saturation
+#' 
+#' @importFrom recipes prep
+#' 
+prep.step_saturation <- function(x, training, info = NULL, ...) {
+  
+  #this will select the appropriate columns from the training set
+  col_names <- recipes_eval_select(x$terms, training, info) 
+  
+  ## We'll use the names later so make sure they are available
+  if (x$options$names == FALSE) {
+    rlang::abort("`names` should be set to TRUE")
+  }
+  
+  #transforms computed here
+  step_saturation_new(terms=x$terms,
+                      trained=TRUE,
+                      role=x$role,
+                      options=x$options,
+                      skip=x$skip,
+                      id=x$id,
+                      asymptote=x$asymptote,
+                      saturation_speed=x$saturation_speed,
+                      hills=col_names
+  )
+  
+}
+
+#'The saturation bake method
+#'
+#'@param object recipe or step
+#'@param mdata the data fed to the recipe or step
+#'
+#'@return
+#'a transformed dataset
+#'
+#'@export
+#'@export bake.step_saturation
+#'
+#'@importFrom recipes bake
+bake.step_saturation<-function(object,new_data,...){
+  vars<-names(object$hills)
+  groupings<-as.character(groups(new_data))
+  
+  new_data[,vars]<-new_data[,object$hills] |> reframe(across(everything(),function(x){get_train_saturation(x,
+                                                                                                            object$asymptote,object$saturation_speed)})) 
+  if(length(groupings)>0) {new_data<-as_tibble(new_data) |> group_by(across(all_of(groupings)))}
+  else{new_data<-as_tibble(new_data)}
+  return(new_data)
+  
+}
+
+#' print method for saturation steps
+#' 
+#' @param x step
+#' @return
+#' string
+#' @export
+#' @export print.step_saturation
+#' 
+print.step_saturation <-
+  function(x, width = max(20, options()$width - 35), ...) {
+    
+    print_step(
+      # Names before prep (could be selectors)
+      untr_obj = x$terms,
+      # Names after prep:
+      tr_obj = names(x$hills),
+      # Has it been prepped? 
+      trained = x$trained,
+      # An estimate of how many characters to print on a line: 
+      width = width,
+      title = paste("Saturation (asymptote=",x$asymptote,"saturation_speed=",x$saturation_speed,"Transformation on")
+    )
+    invisible(x)
+  }
+
+#'tunable method for saturation steps -- used by tune package to identify what each hyperparameter is.
+#'
+#'@param x step or recipe
+#'@return
+#'tibble that tune functions can evaluate as hyperparameter information
+#'@export
+#'@export tunable.step_saturation
+#'
+#'@importFrom tune tunable
+tunable.step_saturation <- function (x, ...) {
+  tibble::tibble(
+    name = c("asymptote","saturation_speed"),
+    call_info = list(list( fun = "asymptote"),list(fun='saturation_speed')),
+    source = c("recipe","recipe"),
+    component = c("step_saturation","step_saturation"),
+    component_id = x$id
+  )
+}
+
+#' dial (ie from the tune package) for asymptote
+#' 
+#' @param range defaults to c(100,300), should be a length2 numeric vector that has the minimum and maximum possible asymptotes for a given variable transformation.  In general the asymptote should be higher than the max value in the historical data.
+#' @return
+#' a quant param dial
+#' @export
+#' @importFrom dials new_quant_param
+asymptote<-function(range=c(100,300)){new_quant_param(type='double',range=range,inclusive=c(FALSE,TRUE),
+                                                    label=c(asymptote='saturation asymptote'),finalize = NULL)}
+
+#' dial (ie from the tune package) for saturation_speed
+#' 
+#' @param range defaults to c(.0001,.009), should be a length 2 numeric vector that has the minimum and maximum possible saturation speed. Small changes in this value have large impact of rate of saturation.
+#' @return
+#' a quant param dial
+#' @export
+#' @importFrom dials new_quant_param
+saturation_speed<-function(range=c(.0001,.009)){new_quant_param(type='double',range=range,inclusive=c(FALSE,FALSE),                                                            label=c(saturation_speed='saturation speed'),finalize = NULL)}
+
+```
+
+
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will be added in the '@examples' part of our function above in the "R/" directory
+- This example will be added in the vignette created from this Rmd template
+-->
+
+```{r examples-saturation}
+#not run!
+library(tidyverse)
+library(recipes)
+library(tune)
+library(mostlytidyMMM)
+
+#create two datasets
+mktdata<-rbind(tibble(prod='brand',store='store1',
+                      sales=c(100,100,100,100,100),tv=c(10,100,0,0,100),
+                      search=c(0,10,20,50,50)) ,
+               tibble(prod='brand',store='store2',
+                      sales=c(10,10,10,10,10),tv=c(0,0,0,0,0),
+                      search=c(0,2,2,0,0) ) ) |> 
+  group_by(prod,store)
+
+mktdata2<-tibble(prod='brand',store='all',
+                 sales=100,tv=1000,search=1000) |> group_by(prod,store)
+
+#creating a recipe with a saturaiton step in it
+rec_obj <-
+ recipe(sales ~ ., data = mktdata) |>
+ step_saturation(c(tv,search),asymptote=200,saturation_speed=.003 ) |>
+ prep(training = mktdata)
+
+#showing what a tunable recipe looks liek:
+rec_obj2<-  recipe(sales ~ ., data = mktdata) |>
+  step_saturation(c(tv,search),asymptote=tune(),saturation_speed=tune() )
+
+extract_parameter_set_dials(rec_obj2)
+
+ #custom print shows values of saturation hyperparameters:
+ print(rec_obj)
+ #or shows that they are set to be tuned:
+ print(rec_obj2)
+ #producing the transformed dataset:
+ bake(rec_obj,mktdata)
+
+```
+
+<!--
+Create a chunk with a test of use for your function
+
+- The chunk needs to be named `tests` at least
+- It contains working tests of your function
+- The chunk is better be named `tests-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This test code will be added in the "tests/testthat/" directory
+-->
+
+```{r tests-saturation}
+
+test_that("saturation steps peform as expected in a recipe", {
+  library(tune)
+  library(recipes)
+  library(tidyverse)
+  mktdata<-rbind(tibble(prod='brand',store='store1',sales=c(100,100,100,100,100),tv=c(10,100,0,0,100),search=c(0,10,20,50,50)) ,
+               tibble(prod='brand',store='store2',sales=c(10,10,10,10,10),tv=c(0,0,0,0,0),search=c(0,2,2,0,0) ) ) |> group_by(prod,store)
+
+mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000) |> group_by(prod,store)
+
+rec_obj <-
+ recipe(sales ~ ., data = mktdata) |>
+ step_saturation(c(tv,search),asymptote=200,saturation_speed=.003 ) |>
+ prep(training = mktdata)
+
+rec_obj2<-  recipe(sales ~ ., data = mktdata) |>
+  step_saturation(c(tv,search),asymptote=tune(),saturation_speed=tune() )
+
+true_mktdata_baked<-readRDS(system.file("baked_mktdata_sat_only.RDS", package = "mostlytidyMMM"))
+true_mktdata2_baked<-readRDS(system.file("baked_mktdata2_sat_only.RDS", package = "mostlytidyMMM"))
+ true_tunable<-readRDS(system.file("true_tunable_saturation.RDS", package = "mostlytidyMMM"))
+ # expect_true(identical(extract_parameter_set_dials(rec_obj2),true_tunable))
+  expect_true( identical(recipes::bake(rec_obj,mktdata),true_mktdata_baked))
+  expect_true( identical( recipes::bake(rec_obj,mktdata2),true_mktdata2_baked))
+  
+})
+```
+
+
+```{r function-adstock-step-1}
+#' function to add saturation trasnformations to a recipe
+#'
+#' @param recipe a recipes::recipe
+#' @param ... variables in recipe to be effected by the step
+#' @param role defaults to NA, set to a string to change the role of the transformed variables
+#' @param retention defaults to .5, the amount of impact retained from the previous time period
+#' @param id default value will work most often, but can be set manually for use with tuning fuctions
+#'
+#' @return
+#' a recipe with the new adstock step appended
+#' @export
+#'
+#' @examples
+#' 
+step_adstock <- function(
+    recipe, 
+    ..., 
+    role = NA, 
+    trained = FALSE, 
+    options = list( names = TRUE), #change to be range of retention
+    skip = FALSE,
+    retention=.5,
+    groups=c('prod','store'),
+    adstocks=NULL,
+    id = rand_id("adstock")
+) {
+  
+  add_step(
+    recipe, 
+    step_adstock_new(
+      terms = enquos(...), 
+      trained = trained,
+      role = role, 
+      options = options,
+      skip = skip,
+      id = id,
+      retention=retention,
+      adstocks=adstocks,
+      groups=groups
+    )
+  )
+}
+
+#' internal function used in create recipe steps
+#'
+#'
+#' @return
+#' a recipe sep of type saturation
+#' @export
+#' 
+#' @example
+#' 
+step_adstock_new <-   function(terms, role, trained, retention, adstocks, groups,options, skip, id) {
+    step(
+      subclass = "adstock", 
+      terms = terms,
+      role = role,
+      trained = trained,
+      adstocks=adstocks,
+      retention=retention,
+      groups=groups,
+      options = options,
+      skip = skip,
+      id = id
+      
+    )
+  }
+
+#' Prep method for step_adstock
+#' @param x step or recipe
+#' @param training dataset used for prep
+#'
+#' @return
+#' a recipe step of type adstock
+#' @export
+#' @export prep.step_adstock
+#' @example
+#' 
+#' @importFrom recipes prep
+#' 
+prep.step_adstock <- function(x, training, info = NULL, ...) {
+  col_names <- recipes_eval_select(x$terms, training, info) 
+  
+  ## We'll use the names later so make sure they are available
+  if (x$options$names == FALSE) {
+    rlang::abort("`names` should be set to TRUE")
+  }
+  
+  step_adstock_new(terms=x$terms,
+                   role=x$role,
+                   trained=TRUE,
+                   retention=x$retention,
+                   groups=x$groups,
+                   adstocks=col_names,
+                   options=x$options,
+                   skip=x$skip,
+                   id=x$id
+  )
+}
+#' function used to compute adstock transformation
+#' 
+#' @param x numeric vector or time series of values to be adstocked
+#' @param retain between 0 and 1, the amount of previous time points value that effects the current time point
+#'
+#' @return
+#' a numeric vector that shows the adstocked values of x
+#' @export
+#' 
+get_adstock<-function(x,retain){
+  x<-as.numeric(stats::filter(x,retain,'recursive'))
+  return(x)
+}
+#' bake method for step_adstock
+#' 
+#' @param object is recipe 
+#' @param new_data data.frame or tibble to be baked
+#'
+#' @return
+#' data that is transformed
+#' @export
+#' @export bake.step_adstock
+#' 
+#' @example
+#' 
+#' @importFrom recipes bake
+#' 
+bake.step_adstock<-function(object,new_data,...){
+  vars<-names(object$adstocks)
+  groupings<-object$groups#as.character(groups(new_data))
+
+  if(length(groupings)==0){rlang::warn("No grouping vars in data for step_adstock -- assumes data is one continous time series!!!  \nIf this isn't true, group and sort the data appropriately!")}
+  
+  stocks<-new_data |> group_by(across(all_of(groupings))) |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
+  
+  new_data[,vars]<-stocks[,vars]
+  
+  
+  if(length(groupings)>0){
+    stocks<-new_data |> group_by(across(all_of(groupings))) |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
+    new_data<-as_tibble(new_data) |> group_by(across(all_of(groupings)))
+  }
+  else{
+    stocks<-new_data |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
+    
+  }
+  return(new_data)
+  
+}
+
+#' custom print method for adstock steps
+#' @param x is recipe or step
+#'
+#' @return
+#' descriptive output to console
+#' @export
+#' @export print.step_adstock
+#' @example
+#' 
+
+print.step_adstock <-
+  function(x, width = max(20, options()$width - 35), ...) {
+    
+    print_step(
+      # Names before prep (could be selectors)
+      untr_obj = x$terms,
+      # Names after prep:
+      tr_obj = names(x$adstocks),
+      # Has it been prepped? 
+      trained = x$trained,
+      # An estimate of how many characters to print on a line: 
+      width = width,
+      title=paste("Adstock Transformation with retention",x$retention,"on"),
+      case_weights=x$case_weights
+    )
+    invisible(x)
+  }
+
+#' tunable method for step_adstock
+#' @param x is a step or recipe
+#'
+#' @return
+#' a tibble interpretable by dials and tune as hyperparameter information
+#' @export
+#' @export tunable.step_adstock
+#' 
+#' @importFrom tune tunable
+#' 
+tunable.step_adstock <- function (x, ...) {
+  tibble::tibble(
+    name = c("retention"),
+    call_info = list(list( fun = "retention")),
+    source = "recipe",
+    component = "step_adstock",
+    component_id = x$id
+  )
+}
+
+#' establishing retention as a dial using new_quant_param
+#'
+#'@param range is the allowed range of retention for a specific hyperparameter
+#'
+#' @return
+#' a quantitative tunable hyperparameter
+#' @export
+#' @importFrom dials new_quant_param
+#' 
+retention<-function(range=c(0,.8)){new_quant_param(type='double',range=range,inclusive=c(TRUE,TRUE),
+                                                   label=c(retention='retention'),finalize = NULL)}
+
+
+```
+
+```{r examples-adstock}
+library(tidyverse)
+library(recipes)
+library(tune)
+library(mostlytidyMMM)
+#create two datasets:
+mktdata<-rbind(tibble(prod='brand',store='store1',
+                      sales=c(100.,100.,100.,100.,100.),
+                      tv=c(10.,100.,0.,0.,100),
+                      search=c(0,10,20,50.,50.)) ,
+               tibble(prod='brand',store='store2',
+                      sales=c(10.,10,10,10,10),tv=c(0.,0,0,0,0),
+                      search=c(0.,2,2,0,0) ) ) |> 
+  group_by(prod,store)
+
+mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000) |> group_by(prod,store)
+
+#build a recipe with two different adstock steps -- could be done in one step
+rec_obj <-  recipe(sales ~ ., data = mktdata) |> step_adstock(tv,retention=.5,groups=c('prod','store')) |>
+  step_adstock(search,retention=.5,groups=c('prod','store')) |>
+  prep(training = mktdata)
+
+#showing off the custom print function
+print(rec_obj)
+
+#see the final transformed output
+bake(rec_obj,mktdata)
+
+#note what happens to store = 'all' in mktdata2:
+bake(rec_obj,mktdata2)
+
+#check to make sure that per-variable application of the step_adstock and step-saturation do not break the grouping structure even though
+#the output tibble from bake is ungrouped (irritatingly)
+
+rec_both_steps<-recipe(sales~.,data=mktdata) |> 
+  step_adstock(tv,retention=.1) |> step_saturation(tv,asymptote=1000,saturation_speed=.001) |>
+  step_adstock(search,retention=.1)  |> prep()
+
+
+bake(rec_both_steps,mktdata)
+
+```
+
+
+# handling roles and steps in bulk
+
+```{r functions-for-working-in-recipes}
+#functions to loop over controls tibbles and create recipe steps
+
+#' loops over the variable control table to assign roles within a recipe.  These
+#' roles control transformations applied and construction of model formulas
+#' 
+#' @param this_recipe a recipe object
+#' @param vars_to_append_roles Defaults to var_controls$varname; a vector of variable names that will have updated roles
+#' @param roles_to_be_appended Defaults to var_controls$role; a vector of roles that match the vars_to_append_roles vector
+#' 
+#' @return a recipe
+
+#' @export
+#' 
+#' @example
+#' 
+bulk_update_role<-function(this_recipe,vars_to_append_roles=var_controls$varname,roles_to_be_appended=var_controls$role){
+  unique_roles<-unique(roles_to_be_appended)
+  for (i in 1:length(unique_roles)){
+    this_role<-unique_roles[i]
+    this_recipe<-this_recipe |> update_role(vars_to_append_roles[roles_to_be_appended==this_role],
+                                             new_role=this_role)
+  }
+  return(this_recipe)
+}
+
+#' loops over the variable control table to assign _second_ rolls within a recipe. These roles control transformations applied and construction of model formulas
+#' 
+#' @param this_recipe a recipe object
+#' @param vars_to_append_roles Defaults to var_controls$varname[!is.na(var_controls$role2)]; a vector of variable names that will have updated roles
+#' @param roles_to_be_appended Defaults to var_controls$role2[!is.na(var_controls$role2)]; a vector of roles that match the vars_to_append_roles vector
+#' 
+#' @return a recipe
+#' 
+#' @export
+#' 
+#' @example
+#' 
+bulk_add_role<-function(this_recipe,vars_to_append_roles=var_controls$varname[!is.na(var_controls$role2)],roles_to_be_appended=var_controls$role2[!is.na(var_controls$role2)]){
+  unique_roles<-unique(roles_to_be_appended)
+  for (i in 1:length(unique_roles)){
+    this_role<-unique_roles[i]
+    this_recipe<-this_recipe |> add_role(vars_to_append_roles[roles_to_be_appended==this_role],
+                                          new_role=this_role)
+  }
+  return(this_recipe)
+}
+
+
+#' loops over the variable control table to add media transformations based on either variable specific transformations or tunable ranges
+#' @param this_recipe a recipe object
+#' @param var_specfic_controls Defaults to var_controls; a tibble containing variable name, role, role2, asymptote, saturation_speed, sign , and retention values (or blanks)
+#' @param media_controls Defaults to transform_controls; a tibble containing groups of variables (ie role2 values) that assignes ranges to asymptote, saturation_speed, and retention IF there are no values for the individual variables
+#' 
+#' @return a recipe
+#' 
+#' @export
+#' 
+#' @example
+#' 
+add_steps_media<-function(this_recipe,var_specific_controls=var_controls,media_controls=transform_controls){
+  #two cases -- specific variable settings in var_specific_controls or not.
+  
+  #find var specific controls here.  
+  
+  var_specific_controls <-var_specific_controls |> select(varname,retention,asymptote,saturation_speed) |> 
+    mutate(across(c(retention,asymptote,saturation_speed),as.numeric) )|> 
+    filter(!is.na(retention) | !is.na(asymptote) |!is.na(saturation_speed)) 
+  
+  n_specific_controls<-nrow(var_specific_controls)
+  
+  vars_to_skip<-vector('character') #this will hold vars with specific settings so they are skipped when doing group -based transforms
+  
+  these_groups<-as.character(groups(this_recipe$template))
+  
+  if(n_specific_controls>0){
+    for(specific in 1:n_specific_controls){
+      this_row<-var_specific_controls[specific,c('varname','asymptote','saturation_speed','retention')]
+      this_var<-var_specific_controls$varname[specific]
+      asymptote_id=paste0(this_var,'_asymptote')
+      saturation_speed_id=paste0(this_var,'_saturation_speed')
+      retention_id=paste0(this_var,'_retention')
+      if(is.na(var_specific_controls$asymptote[specific])){this_asymptote<-tune(asymptote_id)}else{this_asymptote<-var_specific_controls$asymptote[specific]}
+      if(is.na(var_specific_controls$saturation_speed[specific])){this_saturation_speed<-tune(saturation_speed_id)}else{this_saturation_speed<-var_specific_controls$saturation_speed[specific]}
+      if(is.na(var_specific_controls$retention[specific])){this_retention<-tune(retention_id)}else{this_retention<-var_specific_controls$retention[specific]}
+      
+      this_recipe<-this_recipe |> step_adstock(!!this_var,retention=this_retention,groups = these_groups) |>
+        step_saturation(!!this_var,asymptote=this_asymptote,saturation_speed=this_saturation_speed)
+    }
+    #don't need to add steps for any of those variables, so make list to keep out in the settings by role
+    vars_to_skip<-var_specific_controls$varname
+  }
+  
+  if(nrow(media_controls)>0){
+    for(group_no in 1:nrow(media_controls)){
+      this_role<-media_controls$role[group_no]
+      asymptote_id<-paste0(this_role,'_asymptote')
+      saturation_speed_id<-paste0(this_role,'_saturation_speed')
+      retention_id<-paste0(this_role,'_retention')
+      
+      if(media_controls$retention_high[group_no]==media_controls$retention_low[group_no]){
+        this_retention<-media_controls$retention_high[group_no]}else{this_retention<-tune(retention_id)}
+      if(media_controls$asymptote_high[group_no]==media_controls$asymptote_low[group_no]){
+        this_asymptote<-media_controls$asymptote_high[group_no]}else{this_asymptote<-tune(asymptote_id)}
+      if(media_controls$saturation_speed_high[group_no]==media_controls$saturation_speed_low[group_no]){
+        this_saturation_speed<-media_controls$saturation_speed_high[group_no]}else{this_saturation_speed<-tune(saturation_speed_id)}
+      
+      if(length(vars_to_skip)>0){  
+       vars_with_role<-summary(this_recipe) |> group_by(variable) |> 
+          summarise(roles=paste(role,collapse=',')) |> 
+         filter(grepl("predictor",roles,fixed=T),grepl(this_role,roles,fixed=T),
+                !(variable %in% !!vars_to_skip) )|> select(variable) |> distinct() |> unlist()
+        if(length(vars_with_role)>0){
+          this_recipe<-this_recipe |> step_adstock(all_of(vars_with_role),
+                                                    retention = this_retention,groups = these_groups) |> 
+            step_saturation(all_of(vars_with_role),
+                      asymptote=this_asymptote,
+                      saturation_speed=this_saturation_speed)
+          }
+       }
+      else{
+        this_recipe<-this_recipe |> step_adstock(has_role(!!this_role),
+                                                  retention = this_retention,groups=these_groups) |> 
+          step_saturation(has_role(!!this_role),
+                          asymptote=this_asymptote,
+                          saturation_speed=this_saturation_speed)
+      }
+    }
+  }
+  return(this_recipe)
+}
+
+#' renames columns in data per the controls file
+#' @param working_df is the dataset that needs to be renamed in a tibble or data.frame
+#' @param variable_controls Defaults to var_controls; a tibble containing start_name and varname, with varname being the desired final name of each columns
+#' @return
+#' a tibble with (potentially) renamed columns
+#' 
+#' @export
+#' 
+#' @example
+rename_columns_per_controls<-function(working_df,variable_controls=var_controls){
+  new_names<-variable_controls$varname[match(names(working_df),variable_controls$start_name)]
+  #catch for names not in the controls table
+  na_idx<-which(is.na(new_names))
+  new_names[na_idx]<-names(working_df)[na_idx]
+  #rename
+  names(working_df)<-new_names
+  return(working_df)
+}
+
+```
+
+```{r examples-working-with-recipes}
+library(tidyverse)
+library(mostlytidyMMM)
+library(recipes)
+library(tune)
+
+
+#get control spreadsheet
+control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
+var_controls<-readxl::read_xlsx(control_file,'variables')
+transform_controls<-readxl::read_xlsx(control_file,'role controls')
+
+data_set=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls)
+
+
+recipe0<-recipe(head(data_set,n=1) )
+
+recipe1<-recipe0 |> bulk_update_role() |> bulk_add_role()
+add_steps_media(recipe1)
+
+recipe1
+
+```
+
+
+
+<!--
+# There can be development actions
+
+Create a chunk with 'development' actions
+
+- The chunk needs to be named `development` or `dev`
+- It contains functions that are used for package development only
+- Note that you may want to store most of these functions in the 0-dev_history.Rmd file
+
+These are only included in the present flat template file, their content will not be part of the package anywhere else.
+-->
+
+```{r development-inflate, eval=FALSE}
+# Keep eval=FALSE to avoid infinite loop in case you hit the knit button
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_full.Rmd", vignette_name = "Get started")
+```
+
+
+# Inflate your package
+
+You're one inflate from paper to box.
+Build your package from this very Rmd using `fusen::inflate()`
+
+- Verify your `"DESCRIPTION"` file has been updated
+- Verify your function is in `"R/"` directory
+- Verify your test is in `"tests/testthat/"` directory
+- Verify this Rmd appears in `"vignettes/"` directory
