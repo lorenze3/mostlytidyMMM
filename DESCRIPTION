@@ -24,7 +24,7 @@ Suggests:
 VignetteBuilder: 
     knitr
 Remotes: 
-    rmcelreath/rethinking
+    rmcelreath/rethinking,
 	stan-dev/cmdstanr
 Config/fusen/version: 0.5.2.9000
 Encoding: UTF-8
