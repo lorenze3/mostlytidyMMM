@@ -12,6 +12,7 @@ create_ulam_list(
   main_error_term_prior = "half_cauchy(0,100)",
   grand_intercept_prior = "normal(50,50)",
   random_int_stdev_prior = "half_cauchy(0,10)",
+  random_slope_stdev_prior = "half_cauchy(0,10)",
   unspecified_priors = "normal(0,10)"
 )
 }
@@ -27,6 +28,9 @@ create_ulam_list(
 \item{grand_intercept_prior}{defaults to 'normal(50,50)'; is a string defining a sampling distribution from stan and becomes the prior on the intercept in the regression}
 
 \item{random_int_stdev_prior}{defaults to 'half_cauchy(0,10)'; is a string defining the sampling distribution of the std deviation of any included random intercepts.  If there are two groups of 'random intercepts' this will apply to both.}
+
+\item{random_slope_stdev_prior}{defaults to half_cauch(0,10); should be a string describing a stan sampling distribution and is used to define the spread in any random
+slopes in the model}
 
 \item{unspecified_priors}{defaults to 'normal(0,10)'; should be a stan sampling distribution that defines the 'uninformative' prior to use when no other prior is speciied.}
 }
