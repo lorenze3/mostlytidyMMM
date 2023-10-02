@@ -208,11 +208,11 @@ control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
 #get each relevant table of the control file:
 var_controls<-readxl::read_xlsx(control_file,'variables')
 transform_controls<-readxl::read_xlsx(control_file,'role controls')
-workflow_controls<-readxl::read_xlsx(control_file,"workflow") %>% select(-desc)
+workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
 
 #pull data, add fourier transform columns
-data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) %>%  mutate(week=as.Date(week,"%m/%d/%Y")) %>% 
-  mutate(across(c(product),as.factor)) %>% group_by(product,store) %>% arrange(product,store,week) %>% 
+data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) |>  mutate(week=as.Date(week,"%m/%d/%Y")) |> 
+  mutate(across(c(product),as.factor)) |> group_by(product,store) |> arrange(product,store,week) |> 
   mutate(day_int=as.numeric(week),
          cos1=cos(2*pi*day_int/356),
          cos2=cos(4*pi*day_int/356),
@@ -223,7 +223,7 @@ data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package =
          sin2=sin(4*pi*day_int/356),
          sin3=sin(6*pi*day_int/356),
          sin4=sin(8*pi*day_int/356),
-         sin5=sin(10*pi*day_int/356)) %>% select(-day_int) %>% mutate(store=as.factor(store))
+         sin5=sin(10*pi*day_int/356)) |> select(-day_int) |> mutate(store=as.factor(store))
 
 #append several more columns
 lotsa_vars<-paste0('x',1:60)
@@ -235,12 +235,12 @@ data_for_lotsa_vars<-cbind(data1 ,new_x)
 
 #make recipes
 recipea<-recipe(head(data_for_lotsa_vars,n=1) )
-recipeb<-recipea %>% bulk_update_role() %>% bulk_add_role()
-recipeb<-recipeb %>% add_steps_media() %>%  step_select(-has_role('postprocess'))
-recipec <-recipeb %>% step_mutate(week=as.numeric(week)-19247.65) %>% 
-  update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') %>%
+recipeb<-recipea |> bulk_update_role() |> bulk_add_role()
+recipeb<-recipeb |> add_steps_media() |>  step_select(-has_role('postprocess'))
+recipec <-recipeb |> step_mutate(week=as.numeric(week)-19247.65) |> 
+  update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') |>
   add_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='predictor')
-recipec<-recipec %>% update_role(starts_with('x'),new_role='predictor')
+recipec<-recipec |> update_role(starts_with('x'),new_role='predictor')
 
 # build a model formula in the lmer style from the recipe:
 (formula_with_lotsa_vars<-create_formula(recipec))

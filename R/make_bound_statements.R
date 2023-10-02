@@ -18,11 +18,11 @@
 #' #get each relevant table of the control file:
 #' var_controls<-readxl::read_xlsx(control_file,'variables')
 #' transform_controls<-readxl::read_xlsx(control_file,'role controls')
-#' workflow_controls<-readxl::read_xlsx(control_file,"workflow") %>% select(-desc)
+#' workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
 #'
 #' #pull data, add fourier transform columns
-#' data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) %>%  mutate(week=as.Date(week,"%m/%d/%Y")) %>% 
-#'   mutate(across(c(product),as.factor)) %>% group_by(product,store) %>% arrange(product,store,week) %>% 
+#' data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) |>  mutate(week=as.Date(week,"%m/%d/%Y")) |> 
+#'   mutate(across(c(product),as.factor)) |> group_by(product,store) |> arrange(product,store,week) |> 
 #'   mutate(day_int=as.numeric(week),
 #'          cos1=cos(2*pi*day_int/356),
 #'          cos2=cos(4*pi*day_int/356),
@@ -33,7 +33,7 @@
 #'          sin2=sin(4*pi*day_int/356),
 #'          sin3=sin(6*pi*day_int/356),
 #'          sin4=sin(8*pi*day_int/356),
-#'          sin5=sin(10*pi*day_int/356)) %>% select(-day_int) %>% mutate(store=as.factor(store))
+#'          sin5=sin(10*pi*day_int/356)) |> select(-day_int) |> mutate(store=as.factor(store))
 #'
 #' #append several more columns
 #' lotsa_vars<-paste0('x',1:60)
@@ -45,12 +45,12 @@
 #'
 #' #make recipes
 #' recipea<-recipe(head(data_for_lotsa_vars,n=1) )
-#' recipeb<-recipea %>% bulk_update_role() %>% bulk_add_role()
-#' recipeb<-recipeb %>% add_steps_media() %>%  step_select(-has_role('postprocess'))
-#' recipec <-recipeb %>% step_mutate(week=as.numeric(week)-19247.65) %>% 
-#'   update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') %>%
+#' recipeb<-recipea |> bulk_update_role() |> bulk_add_role()
+#' recipeb<-recipeb |> add_steps_media() |>  step_select(-has_role('postprocess'))
+#' recipec <-recipeb |> step_mutate(week=as.numeric(week)-19247.65) |> 
+#'   update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') |>
 #'   add_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='predictor')
-#' recipec<-recipec %>% update_role(starts_with('x'),new_role='predictor')
+#' recipec<-recipec |> update_role(starts_with('x'),new_role='predictor')
 #'
 #' # build a model formula in the lmer style from the recipe:
 #' (formula_with_lotsa_vars<-create_formula(recipec))
@@ -61,7 +61,7 @@
 #'
 make_bound_statements<-function(variable_controls=var_controls){
  
-  bounded_coefs<-variable_controls %>% filter(!is.na(sign)) %>% rowwise() %>% mutate(
+  bounded_coefs<-variable_controls |> filter(!is.na(sign)) |> rowwise() |> mutate(
     bound_statement =list(ifelse(sign %in% c('>=0','>0','>','+'),'lower=0',
                                  ifelse(sign %in% c('<=0','<0','<','-'),'upper=0',sign))),
     name_for_list=ifelse(tolower(role)=='outcome',varname,paste0('b_',varname))
@@ -81,8 +81,8 @@ make_bound_statements<-function(variable_controls=var_controls){
 #' 
 #' @example
 make_prior_statements<-function(variable_controls=var_controls){
-  prior_frame<-variable_controls %>% filter(!is.na(prior)) %>% select(varname,sign,prior,prior_sd) %>% mutate(prior_sd=ifelse(is.na(prior_sd),prior*5,prior_sd))
-  prior_frame<-prior_frame %>% rowwise() %>% mutate(coef_name=paste0("b_",varname),
+  prior_frame<-variable_controls |> filter(!is.na(prior)) |> select(varname,sign,prior,prior_sd) |> mutate(prior_sd=ifelse(is.na(prior_sd),prior*5,prior_sd))
+  prior_frame<-prior_frame |> rowwise() |> mutate(coef_name=paste0("b_",varname),
                                                     prior_def=list(as.formula(paste0("b_",varname,"~ normal(",prior,",",prior_sd,")"))))
   
   priors_for_ulam<-prior_frame$prior_def
@@ -278,10 +278,10 @@ predict.ulam<-function(ulamobj,new_data,n=1000,reduce=T,conf=.95){
 #'
 #' @example
 get_predictors_vector<-function(base_recipe=recipe3){
-  groups_and_time<-unlist(summary(base_recipe) %>% filter(role %in% c('group','time')) %>% select(variable))
+  groups_and_time<-unlist(summary(base_recipe) |> filter(role %in% c('group','time')) |> select(variable))
   
-  predictors<-unlist(summary(base_recipe) %>% 
-                       filter(role=='predictor') %>% select(variable))
+  predictors<-unlist(summary(base_recipe) |> 
+                       filter(role=='predictor') |> select(variable))
   
   return(predictors[!(predictors %in% groups_and_time)])
 }
@@ -296,7 +296,7 @@ get_predictors_vector<-function(base_recipe=recipe3){
 #' @importFrom dplyr filter
 get_control<-function(this_control,control=workflow_controls){
   if(length(this_control)==0){stop("get_control requires this_control to be non-null")}
-  control %>% filter(R_name==!!this_control) %>% select(Value) %>% unlist()
+  control |> filter(R_name==!!this_control) |> select(Value) |> unlist()
 }
 
 
@@ -314,7 +314,7 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
   
   final_predictors<-get_predictors_vector(base_recipe=base_recipe)
   outcome<-get_control(this_control='Y',control=control)  
-  fft_terms<-get_control("fft_terms",control=control) %>% as.numeric()
+  fft_terms<-get_control("fft_terms",control=control) |> as.numeric()
   fft_terms<-ifelse(is.na(fft_terms),0,fft_terms)
   
   fft_formula<-""
@@ -326,7 +326,7 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
         fft_formula=paste(fft_formula,paste(c('cos','sin'),i,sep='',collapse='+'),sep='+')
       }}}
   
-  list_rand_ints<-gsub(" ","",get_control("list_rand_ints",control=control),fixed=T) %>% strsplit(',',fixed=T) %>% unlist()
+  list_rand_ints<-gsub(" ","",get_control("list_rand_ints",control=control),fixed=T) |> strsplit(',',fixed=T) |> unlist()
   list_rand_ints<-list_rand_ints[!is.na(list_rand_ints)]
   
   rand_int_formula<-""
@@ -334,7 +334,7 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
     rand_int_formula<-paste(list_rand_ints,collapse =' + ')
   }
   
-  list_rand_slopes<-gsub(" ","",get_control("list_rand_slopes",control=control),fixed=T) %>% strsplit(',',fixed=T) %>% unlist()
+  list_rand_slopes<-gsub(" ","",get_control("list_rand_slopes",control=control),fixed=T) |> strsplit(',',fixed=T) |> unlist()
   list_rand_slopes<-list_rand_slopes[!is.na(list_rand_slopes)]
   
   rand_slope_formula<-""

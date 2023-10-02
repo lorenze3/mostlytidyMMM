@@ -171,3 +171,113 @@ rename_columns_per_controls<-function(working_df,variable_controls=var_controls)
   return(working_df)
 }
 
+#' computes variables suitable for seasonality predictors
+#' @param data_to_use defaults to data1; suitable for MMM and with variables matching the vc table
+#' @param vc deafults to var_controls; tibble with varname and role indicating which
+#' variable is the time_id column
+#' @export
+#' @example
+#' 
+add_fourier_vars<-function(data_to_use=data1,vc=var_controls){
+  time_id_var <-vc|> filter(role=='time_id') |> select(varname) |> unlist()
+  
+  time_id_vec<-data_to_use |> select(all_of(time_id_var)) |> unlist()
+  if(!is.numeric(time_id_vec)){stop("non numeric vector used as time_id var.  
+                                  For variable set as time_id var (ie where role=time_id), please reset it to be a date or number representing a date ")}
+  
+  data_to_use$day_int=time_id_vec
+  return(data_to_use |> mutate(cos1=cos(2*pi*day_int/356),
+                                cos2=cos(4*pi*day_int/356),
+                                cos3 =cos(6*pi*day_int/356),
+                                cos4 = cos(8*pi*day_int/356),
+                                cos5 = cos(10*pi*day_int/356),
+                                sin1=sin(2*pi*day_int/356),
+                                sin2=sin(4*pi*day_int/356),
+                                sin3=sin(6*pi*day_int/356),
+                                sin4=sin(8*pi*day_int/356),
+                                sin5=sin(10*pi*day_int/356)) |> select(-day_int))
+}
+#' sorts and groups data per the variable controls table
+#' 
+#' @param data_to_use defaults to data1;  a tibble or tidytable suitable for MMM and matching the 
+#' variables listed in vc (the variable congtrol table)
+#' @param vc defaults to var_controls; a tibble with varname, role, role2, describing
+#' the roles variables will play in the MMM
+#' @export
+#' @return
+#' a tibble 
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr across
+#' @importFrom dplyr all_of
+#' @importFrom dplyr arrange
+add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
+  #extract groups from vc
+  groupings<-vc |> filter(role2=='group') |> select(varname) |> unlist()
+  names(groupings)<-NULL
+  time_id_var <-vc|> filter(role=='time_id') |> select(varname) |> unlist()
+  if(length(groupings)>0){
+    
+    data_to_use<-data_to_use|> 
+      mutate(across(all_of(!!groupings),as.factor))
+    
+    return(data_to_use |>  group_by(across(all_of(groupings))) |> 
+             arrange(across(all_of( c(!!groupings,!!time_id_var)))) )
+  }
+  else{
+    return(data_to_use |> arrange(across(all_of(c(!!time_id_var))) )
+           ) }
+}
+
+#' reads the variable controls configuration and dataset to create a recipe, 
+#' which may include tuning dials
+#' 
+#' @param data_to_use defaults to data1, should be a tibble or tidytable that 
+#' has variable names and structure useable as template for the MMM data
+#' @param vc defaults to var_controls, should be a tibble describing individual
+#' variable roles (ie role and role 2 and varname are included inthe tibble).
+#' 
+#' @export
+#' 
+#' @example
+#' 
+#' @return a recipe with roles, adstock and saturation steps defined by controls table
+#' 
+#' @importsFrom recipes
+create_recipe<-function(data_to_use=data1,vc=var_controls){
+  #start recipe by assigning roles
+  #  small data is good, going to need to loop over recipe repeatedly, lots of internal copying
+  
+  # if(adding_trend){
+  #   #identifyt he time variable and flag if more than 1
+  #   vc |> filter(role2=='trend',role=='time_id') |> select(varname) |> unlist()->trend_vars
+  #   if(length(trend_vars)>1){stop('control file asks to add a centered trend but two variables are defined as time predictors.\nCheck the variables tab for role2="trend", role="time_id" and make sure only a single variable is listed' )}
+  #   if(length(trend_vars)==0){stop('control file asks to add a centered trend but no variable has role="time_id" and role2 = "trend".')}
+  #   # column_to_change<-data_to_use |>ungroup() |>  select(!!trend_vars) |> unlist() |> as.numeric()
+  #   # data_to_use[trend_vars]<-column_to_change
+  # }
+  groupings<-as.character(groups(data_to_use))
+  
+  
+  recipe0<-recipe(head(data_to_use,n=1) ) 
+  
+  recipe1<-recipe0 |> bulk_update_role() |> bulk_add_role() 
+  # if(adding_trend){
+  #   recipe1<-recipe1 |> add_role(has_role('trend'),new_role='predictor')# |> step_center(has_role='trend') 
+  # }else{
+  # #   #this will remove the trend term from forumals down stream
+  #   recipe1<-recipe1 |> update_role(has_role('trend'),new_role='time',old_role='trend') 
+  # }
+  recipe2<-recipe1 |> add_steps_media() |>  step_select(-has_role('postprocess'))
+  ##TODO: test all variations of tune vs fixed -- test alpha, e.g.
+  
+  recipe3 <-recipe2  |># step_center(week) |>
+    update_role(c(sin1,sin2,sin3,sin4,sin5,cos1,cos2,cos3,cos4,cos5),new_role='time') |> 
+    add_role(c(sin1,sin2,sin3,sin4,sin5,cos1,cos2,cos3,cos4,cos5),new_role='predictor') |> 
+    step_novel(all_of(!!groupings)) |> 
+     step_mutate_at(all_of(!!groupings),fn=list(id=as.integer))
+  return(recipe3)
+}
+
+
