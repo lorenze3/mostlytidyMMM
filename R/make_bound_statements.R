@@ -6,7 +6,13 @@
 #' a list of boundary statements suitable for rethinking::ulam
 #' 
 #' @export
-#' 
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr across
+#' @importFrom dplyr all_of
+#' @importFrom dplyr arrange
+#' @importFrom dplyr rowwise
 #' @example
 #' library(recipes)
 #' library(tune)
@@ -273,6 +279,11 @@ predict.ulam<-function(ulamobj,new_data,n=1000,reduce=T,conf=.95){
 #' @export
 #'
 #' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr across
+#' @importFrom dplyr all_of
+#' @importFrom dplyr arrange
 #'
 #' @return a vector of variablnames that have role == 'predictor'
 #'
@@ -282,10 +293,46 @@ get_predictors_vector<-function(base_recipe=recipe3){
   
   predictors<-unlist(summary(base_recipe) |> 
                        filter(role=='predictor') |> select(variable))
-  
+  names(predictors)<-NULL
   return(predictors[!(predictors %in% groups_and_time)])
 }
 
+#'pulls vector of identification variables from recipe using role== group or role==time_id
+#' @param base_recipe defaults to recipe3; a recipe produced in the mostlytidyMMM format
+#' @return
+#' a character vector
+#' @example 
+#' @export
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr across
+#' @importFrom dplyr all_of
+#' @importFrom dplyr arrange
+get_id_vector<-function(base_recipe=recipe3){
+  groups_and_time<-unlist(summary(base_recipe) |> filter(role %in% c('group','time_id')) |> select(variable))
+  names(groups_and_time)<-NULL
+    return(groups_and_time)
+}
+
+
+#'pulls outcome variable from recipe using role== group or role==time_id
+#' @param base_recipe defaults to recipe3; a recipe produced in the mostlytidyMMM format
+#' @return
+#' a character vector
+#' @example 
+#' @export
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr mutate
+#' @importFrom dplyr across
+#' @importFrom dplyr all_of
+#' @importFrom dplyr arrange
+get_outcome_vector<-function(base_recipe=recipe3){
+  groups_and_time<-unlist(summary(base_recipe) |> filter(role %in% c('outcome')) |> select(variable))
+  names(groups_and_time)<-NULL
+  return(groups_and_time)
+}
 #' Pulls values from the control tibble by name; convenience function for working with the control tibble.
 #' 
 #' @param this_control is the string containing the control of interest
@@ -361,3 +408,117 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
 }
 
 
+#' get decomps agnostic to multiplicative or additive model specification
+#'
+#' @param data_to_use defaults to data 3; a transformed dataset (likely produced via bake())
+#' @param recipe_to_use defaults to recipe3; a recipe which has the roles assigned for the MMM
+#' @param model_obj defaults to rethinking_results; an ulam fit object
+#' @param predictors defaulst to get_predictors(recipe3)
+#' @param sample_size seems to be useless input to link() function
+#' @export
+#' @importFrom rethinking link
+#' @example
+#' @return
+#' a tibble with one row per row in data_to_use, incluiding id columns as pulled from
+#' the recipe_to_use (ie where role == group or role==time_id), and the one column
+#' per predictor variable that shows the amount of the outcome variable due to that predictor.
+#' 
+#' Additionally, the columns decomp_base, decomp0_tot, pred, and decomp_ratio are appended.
+#' 
+#' decomp_base is the amount of the outcome variable due to intercept(s) and other no response
+#' function needed variables.  decomp0_tot is the sum of the predictor var decomp columns prior
+#' to rescaling.  decomp_ratio is the ratio of pred (the full predicted outcome) to decomp0_tot.
+#' This has been applied as scaling factor -- it will generally be different from 1 for multiplicative models
+#' and be 1 for additive models.
+#' @details
+#' The decomp algorithm works by first setting all predictors that are not _id variables (as found
+#' by get_predictors_vector() to zero and calling link() to determine the prediction for this scenario.
+#' 
+#' That prediction becomes the initial decomp_base.
+#' 
+#' Then each predictor is set back to historical values one at a time, and the initial decomp for that
+#' variable is set to the difference in prediction with that predictor 'on' and the decomp_base.
+#' 
+#' Finally, the sum of all the initial decomps is taken, and the ratio between the pred and the sum of decomps
+#' is used to scale all decomps (so the sum is equal to prediction).
+#' 
+#' For additive models, this is equivalent to decomp = model_coef * modeled_independent_variable; for
+#' multiplicative models this is equivalent to thinking of decomps as lift over base, with an adjustment to make it
+#' additive.
+get_decomps_irregardless<-function(data_to_use=data3,recipe_to_use=recipe_finalized,model_obj=rethinking_results,
+                             predictors=get_predictors_vector(recipe_to_use),sample_size=1000){
+  
+  
+  #predictors will need to be trimmed of *_id variables (at least until we know how to predict with missinf id values)
+  predictors<-predictors[!grepl("_id",predictors,fixed=T)]
+  
+  variations<-vector('list',length=length(predictors))
+  predictors_to_zero<-data_to_use |>
+    mutate(across(all_of(!!predictors),function(x) 0 ))
+  for(i in 1:length(variations)){
+    variations[[i]]<-predictors_to_zero
+    variations[[i]][predictors[i]]<-data_to_use[predictors[i]]
+  }
+  names(variations)<-predictors
+  
+  decomp_names<-c(names(variations),"decomp_base")
+  preds_variations<-lapply(variations,function(x) {colMeans(link(model_obj,x,n=sample_size)$big_model)})
+  
+  preds_all<-colMeans(link(model_obj,data_to_use,n=sample_size)$big_model)
+  
+  #intercept_only
+ 
+  decomp_base<-colMeans(link(model_obj,
+                                predictors_to_zero,
+                                n=sample_size
+                                )$big_model)
+  
+  #this initial delta will be not additive if model is mutiplicative
+  list_decomps_0<-lapply(preds_variations,function(x) x-decomp_base)
+  decomps_0<-as_tibble(list_decomps_0) 
+  #sum decomps_0 . . .
+  # decomps_0$int_only<-int_off_preds-preds_main
+  
+  decomps_0$decomp_base=decomp_base
+  decomps_0$decomp0_tot<-rowSums(decomps_0,na.rm=T)
+  decomps_0$pred<-preds_all
+  decomps_0$decomp_ratio <-  decomps_0$pred/decomps_0$decomp0_tot
+  decomps_1<- decomps_0 |>mutate(across(all_of(!!decomp_names),function(x) x*decomp_ratio))
+  #to make sure output is clear, need to rename these to decomps_
+  #append the columns in data_to_use that are not in decomps_1
+
+  decomps_1<-cbind(data_to_use %>% select(all_of(get_id_vector(recipe_to_use))),
+                   data_to_use %>% select(all_of(get_outcome_vector(recipe_to_use))),
+        decomps_1)
+  return(decomps_1)
+}
+
+
+update_range_from_control<-function(parameter_set,controls){
+  for(i in 1:length(parameter_set$id)){
+    parameter_set$object[i][[1]]<-do.call(
+      unlist(controls[controls$dial_id==parameter_set$id[i],'dial_func']),
+      list(range=unlist(controls[controls$dial_id==parameter_set$id[i],'new_range']))
+    )
+  }
+  return(parameter_set)
+}
+
+create_dials_from_wf_and_controls<-function(workflow=mmm_wf,control_ranges=transform_controls){
+  tune_these_parms<-extract_parameter_set_dials(workflow) #will have default ranges
+  if(nrow(tune_these_parms)==0){return(tune_these_parms)}
+  #get ranges from transform_controls
+  gamma_ranges<-control_ranges %>%rowwise() %>%  mutate(dial_id=paste0(role,"_saturation_speed")) %>% 
+    mutate(new_range=map2(list(saturation_speed_low),list(saturation_speed_high),~c(.x,.y)),
+           dial_func='saturation_speed') %>% select(dial_id,new_range,dial_func)
+  
+  alpha_ranges<-control_ranges %>%rowwise() %>%  mutate(dial_id=paste0(role,"_asymptote")) %>% 
+    mutate(new_range=map2(list(asymptote_low),list(asymptote_high),~c(.x,.y)),dial_func='asymptote') %>% select(dial_id,new_range,dial_func)
+  
+  retention_ranges<-control_ranges %>%rowwise() %>%  mutate(dial_id=paste0(role,"_retention")) %>% 
+    mutate(new_range=map2(list(retention_low),list(retention_high),~c(.x,.y)),dial_func='retention') %>% select(dial_id,new_range,dial_func)
+  
+  
+  tune_these_parms<-update_range_from_control(tune_these_parms,rbind(gamma_ranges,alpha_ranges,retention_ranges))
+  return(tune_these_parms)
+}
