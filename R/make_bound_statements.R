@@ -403,7 +403,8 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
     }
     built_formula<-trimws(built_formula)
   }
-  
+  #repair any +  +, which indicate an empty term
+  built_formula<-gsub("\\+  \\+","\\+",built_formula)
   return(built_formula)
 }
 
