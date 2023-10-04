@@ -17,6 +17,7 @@
 #' library(tidyverse)
 #' library(recipes)
 #' library(tune)
+#' library(dials)
 #' library(mostlytidyMMM)
 #' #create two datasets:
 #' mktdata<-rbind(tibble(prod='brand',store='store1',
@@ -246,7 +247,7 @@ tunable.step_adstock <- function (x, ...) {
 #' @export
 #' @importFrom dials new_quant_param
 #' 
-retention<-function(range=c(0,.8)){new_quant_param(type='double',range=range,inclusive=c(TRUE,TRUE),
+retention<-function(range=c(0,.8)){dials::new_quant_param(type='double',range=range,inclusive=c(TRUE,TRUE),
                                                    label=c(retention='retention'),finalize = NULL)}
 
 
@@ -282,6 +283,7 @@ retention<-function(range=c(0,.8)){new_quant_param(type='double',range=range,inc
 #' library(tidyverse)
 #' library(recipes)
 #' library(tune)
+#' library(dials)
 #' library(mostlytidyMMM)
 #'
 #' #create two datasets
@@ -496,7 +498,7 @@ tunable.step_saturation <- function (x, ...) {
 #' a quant param dial
 #' @export
 #' @importFrom dials new_quant_param
-asymptote<-function(range=c(100,300)){new_quant_param(type='double',range=range,inclusive=c(FALSE,TRUE),
+asymptote<-function(range=c(100,300)){dials::new_quant_param(type='double',range=range,inclusive=c(FALSE,TRUE),
                                                     label=c(asymptote='saturation asymptote'),finalize = NULL)}
 
 #' dial (ie from the tune package) for saturation_speed
@@ -506,5 +508,5 @@ asymptote<-function(range=c(100,300)){new_quant_param(type='double',range=range,
 #' a quant param dial
 #' @export
 #' @importFrom dials new_quant_param
-saturation_speed<-function(range=c(.0001,.009)){new_quant_param(type='double',range=range,inclusive=c(FALSE,FALSE),                                                            label=c(saturation_speed='saturation speed'),finalize = NULL)}
+saturation_speed<-function(range=c(.0001,.009)){dials::new_quant_param(type='double',range=range,inclusive=c(FALSE,FALSE),                                                            label=c(saturation_speed='saturation speed'),finalize = NULL)}
 

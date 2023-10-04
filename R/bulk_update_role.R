@@ -18,6 +18,7 @@
 #' library(tidyverse)
 #' library(mostlytidyMMM)
 #' library(recipes)
+#' library(dials)
 #' library(tune)
 #'
 #'

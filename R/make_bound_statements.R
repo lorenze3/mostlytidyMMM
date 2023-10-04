@@ -16,6 +16,7 @@
 #' @example
 #' library(recipes)
 #' library(tune)
+#' library(dials)
 #' library(tidyverse)
 #' library(mostlytidyMMM)
 #'

@@ -39,6 +39,7 @@ function to add saturation trasnformations to a recipe
 library(tidyverse)
 library(recipes)
 library(tune)
+library(dials)
 library(mostlytidyMMM)
 #create two datasets:
 mktdata<-rbind(tibble(prod='brand',store='store1',

@@ -77,6 +77,7 @@ After inflating the template
 library(tidyverse)
 library(recipes)
 library(tune)
+library(dials)
 library(mostlytidyMMM)
 
 #create two datasets
@@ -130,6 +131,7 @@ After inflating the template
 library(tidyverse)
 library(recipes)
 library(tune)
+library(dials)
 library(mostlytidyMMM)
 #create two datasets:
 mktdata<-rbind(tibble(prod='brand',store='store1',
@@ -175,6 +177,7 @@ bake(rec_both_steps,mktdata)
 library(tidyverse)
 library(mostlytidyMMM)
 library(recipes)
+library(dials)
 library(tune)
 
 
@@ -200,6 +203,7 @@ recipe1
 ```{r examples-rehtinking-ulam-related-functions}
 library(recipes)
 library(tune)
+library(dials)
 library(tidyverse)
 library(mostlytidyMMM)
 

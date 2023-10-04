@@ -5,6 +5,7 @@ test_that("saturation steps peform as expected in a recipe", {
   library(tune)
   library(recipes)
   library(tidyverse)
+  library(dials)
   mktdata<-rbind(tibble(prod='brand',store='store1',sales=c(100,100,100,100,100),tv=c(10,100,0,0,100),search=c(0,10,20,50,50)) ,
                tibble(prod='brand',store='store2',sales=c(10,10,10,10,10),tv=c(0,0,0,0,0),search=c(0,2,2,0,0) ) ) |> group_by(prod,store)
 

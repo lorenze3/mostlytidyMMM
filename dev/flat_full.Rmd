@@ -309,6 +309,7 @@ After inflating the template
 library(tidyverse)
 library(recipes)
 library(tune)
+library(dials)
 library(mostlytidyMMM)
 
 #create two datasets
@@ -363,6 +364,7 @@ test_that("saturation steps peform as expected in a recipe", {
   library(tune)
   library(recipes)
   library(tidyverse)
+  library(dials)
   mktdata<-rbind(tibble(prod='brand',store='store1',sales=c(100,100,100,100,100),tv=c(10,100,0,0,100),search=c(0,10,20,50,50)) ,
                tibble(prod='brand',store='store2',sales=c(10,10,10,10,10),tv=c(0,0,0,0,0),search=c(0,2,2,0,0) ) ) |> group_by(prod,store)
 
@@ -604,6 +606,7 @@ retention<-function(range=c(0,.8)){dials::new_quant_param(type='double',range=ra
 library(tidyverse)
 library(recipes)
 library(tune)
+library(dials)
 library(mostlytidyMMM)
 #create two datasets:
 mktdata<-rbind(tibble(prod='brand',store='store1',
@@ -938,6 +941,7 @@ create_recipe<-function(data_to_use=data1,vc=var_controls,mc=transform_controls,
 library(tidyverse)
 library(mostlytidyMMM)
 library(recipes)
+library(dials)
 library(tune)
 
 
@@ -1571,6 +1575,7 @@ create_dials_from_wf_and_controls<-function(workflow=mmm_wf,control_ranges=trans
 ```{r examples-rehtinking-ulam-related-functions}
 library(recipes)
 library(tune)
+library(dials)
 library(tidyverse)
 library(mostlytidyMMM)
 
