@@ -9,7 +9,7 @@ flat_full.Rmd:
   vignettes: vignettes/get-started.Rmd
   inflate:
     flat_file: dev/flat_full.Rmd
-    vignette_name: Get started
+    vignette_name: get-started
     open_vignette: true
     check: true
     document: true

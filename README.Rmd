@@ -19,11 +19,21 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/lorenze3/mostlytidyMMM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/lorenze3/mostlytidyMMM?branch=main)
 <!-- badges: end -->
 
+## Intent
+
 mostlytidyMMM is a toolkit for building a marketing mix model.  tidymodels provides the hyperparameter tuning and McElreath's rethinking builds a link to Stan to constrained, prior informed regression modeling.
 
-## Installation
+This package is similar in intent to Meta's [Robyn]() and Google's [lightweightMMM]() in that it offers basic MMM capability without an analyst needing to choose write their own functions.  In terms of philosophy of MMM, this package is somewhere between Robyn and lightweightMMM -- it uses pre-modelling transformations for time delayed effects (i.e. adstocking) and saturation transformations like Robyn, but the final coefficients are estimated via MCMC to take advantage of the ability of bayesian regression to utilize prior information to inform coefficients.
 
-You can install the development version of mostlytidyMMM from [GitHub](https://github.com/) with:
+Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst for level of data granularity and model form (*welp*, currently only allows normal regression, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).
+
+Robyn's hyperparameter search using the efficient frontier between multiple objectives is replaced with tidymodel's tune packages, although ultimately the metric used for tuning is up to the analyst.  Additionally, mostlytidyMMM is setup to test multiple model specifications in the form of including varying random effects (both intercepts and slope).
+
+In general, mostlytidyMMM allows an analyst with a table ready for MMM to specify a reasonable set of models and priors in an .xlsx configuration file and quickly hone on a 'final' model specification.
+
+
+## Installation
+After installing [cmdstanr](https://mc-stan.org/cmdstanr/) and [rethinking](https://github.com/rmcelreath/rethinking), mostlytidyMMM can be installed directly from [GitHub](https://github.com/) via:
 
 ``` r
 # install.packages("devtools")
@@ -34,27 +44,114 @@ devtools::install_github("lorenze3/mostlytidyMMM")
 
 Full documentation website on: https://lorenze3.github.io/mostlytidyMMM
 
-## Example
+## Straightfoward MMM walkthrough
 
-This is a basic example which shows you how to solve a common problem:
+When no tuning is required, a few function calls translate the .xlsx file into a fitted model.
 
+First we read in the configuration file:
 ```{r example}
 library(mostlytidyMMM)
-## basic example code
+library(tidyverse)
+library(tidymodels)
+library(rethinking)
+
+
+control_file<-system.file('no_tuning_example.xlsx',package='mostlytidyMMM')
+
+#get each relevant table of the control file:
+var_controls<-readxl::read_xlsx(control_file,'variables')
+transform_controls<-readxl::read_xlsx(control_file,'role controls')
+workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r cars}
-summary(cars)
+
+The next few lines read in the data and then use the configuration files to rename, group, and sort the file.
+```{r example 2}
+data1<-read.csv(system.file('example2.csv',package='mostlytidyMMM'))|>rename_columns_per_controls(variable_controls=var_controls)|>
+  rename_columns_per_controls()|> mutate(week=as.Date(week,"%m/%d/%Y"))|>
+  add_fourier_vars(vc=var_controls) |>  add_groups_and_sort(vc=var_controls) 
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+Now we create a recipe for the pre-processing  and a model formula (in the style of lmer()) based on the data and the 3 config tables
 
-You can also embed plots, for example:
+```{r example 3}
+(no_tuning_recipe<-create_recipe(data1,vc=var_controls,mc=transform_controls,wc=workflow_controls))
 
-```{r pressure, echo = FALSE}
-plot(pressure)
+(formula_in_a_string<-create_formula(base_recipe=no_tuning_recipe,control=workflow_controls))
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+create a rethinking::ulam appropriate flist from the formula and the config tables (priors from config, e.g.) and also a set of constraint statements:
+
+```{r example 4}
+(expressions_for_ulam<-create_ulam_list(prior_controls=var_controls,model_formula=formula_in_a_string,
+                 grand_intercept_prior='normal(45,25)') )
+
+
+(bounds_for_ulam<-make_bound_statements(variable_controls=var_controls))
+```
+
+
+Bake data (ie, apply the transformations) and call rethinking::ulam to fit the bayesian regression (in this case with random slopes and intercepts).  **NB:**In actual use, much higher iteration numbers are preferred.
+
+```{r example 5}
+model_data<-no_tuning_recipe %>% prep() %>% bake(data1)
+
+fitted_model_obj<-ulam(expressions_for_ulam, 
+                     model_data,
+                     constraints=bounds_for_ulam,
+                     chains=2,
+                     iter=100,
+                     cores=2,
+                     file='no_tuning_mod',#have a care to remove this if you want to resample!
+                     declare_all_data=F,
+                     messages=F
+                   )
+
+```
+
+a predict method for ulam objects is included in the mostlytidyMMM package
+```{r example 6}
+model_data$pred<-predict(fitted_model_obj,model_data)[,1]
+
+```
+
+Some basic charts of fit, as examples:
+```{r example 7}
+this_rsq<-rsq(model_data|>ungroup(),truth=sales,estimate=pred)['.estimate'] %>% unlist()
+this_mape<-mape(model_data|>ungroup(),truth=sales,estimate=pred)['.estimate'] %>% unlist()
+ggplot(model_data ,aes(x=sales,y=pred,color=store_id))+
+  geom_point()+ geom_abline(slope=1,intercept=0)+ggthemes::theme_tufte()+
+  ggtitle("Predicted vs Actual",subtitle=paste0('Rsq is ',round(this_rsq,2)))
+```
+
+```{r example 8}
+model_preds_long<-model_data %>% pivot_longer(c(pred,sales))
+
+ggplot(model_preds_long,aes(x=week,y=value,color=name))+geom_line()+
+  ggtitle("Sales and Predicted Sales by Week",subtitle=paste('MAPE is',round(this_mape)))
+```
+
+
+a function for decomposition is included as well:
+```{r example 9}
+decomps<-get_decomps_irregardless(model_data %>% ungroup(),recipe_to_use=no_tuning_recipe,
+                         model_obj=fitted_model_obj,
+                         )
+```
+
+
+Roll those up to total by week and plot them:
+```{r example 10}
+decomps_natl<-decomps %>% select(week,all_of(!!get_predictors_vector(no_tuning_recipe))) %>% group_by(week) %>% summarise(across(where(is.numeric),sum))
+
+decomps_natl<-decomps_natl %>% pivot_longer(cols=c(-week))
+
+ggplot(data=decomps_natl,aes(x=week,y=value,fill=name)) + geom_area()+ggthemes::theme_tufte()+
+  ggtitle("Decomposition By Week")+
+  theme(legend.position = 'bottom')
+```
+          
+
+
+
