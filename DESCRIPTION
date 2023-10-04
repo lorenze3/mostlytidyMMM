@@ -15,7 +15,8 @@ Imports:
     stats,
     stringr,
     tibble,
-    tune
+    tune,
+    workflows
 Suggests: 
     knitr,
     readxl,

@@ -351,16 +351,21 @@ get_control<-function(this_control,control=workflow_controls){
 #' 
 #' @param base_recipe defaults to recipe3; is the recipe containing variables to build a formula for
 #' @param control defaults to workflow_controls, should be a tibble with columns R_name and Value, which must have rows with R_name =='Y','list_rand_ints' and 'fft_terms'
+#' @param ignore_rands defaults to FALSE, but if set to TRUE the created formula 
+#' will not contain random intercepts or slopes other than fourier transform 
+#' related slopes (if those are specified in the control frame)
 #' @return
 #' a string that reads like an lmer formula
 #' @export
 #' 
 #' @example
-create_formula<-function(base_recipe=recipe3,control=workflow_controls){
+create_formula<-function(base_recipe=recipe3,control=workflow_controls,ignore_rands=FALSE){
   #we will remove grouping vars (used for random effects) and time series stuff (for now)
   
   final_predictors<-get_predictors_vector(base_recipe=base_recipe)
   outcome<-get_control(this_control='Y',control=control)  
+  fft_interaction_term<-get_control("interaction_fft",control=control)
+  
   fft_terms<-get_control("fft_terms",control=control) |> as.numeric()
   fft_terms<-ifelse(is.na(fft_terms),0,fft_terms)
   
@@ -368,9 +373,19 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
   
   if(fft_terms>0){
     for(i in 1:fft_terms){
-      if (i==1){fft_formula= 'sin1 + cos1'}
+      if (i==1){
+        if(fft_interaction_term!="" & !is.na(fft_interaction_term)){ fft_formula=
+            paste0("(sin1|",fft_interaction_term,") + (cos1|",fft_interaction_term,")")}
+        else{  fft_formula= 'sin1 + cos1'}
+      }
       else{
+        if(fft_interaction_term!="" & !is.na(fft_interaction_term)){
+          new_term<-paste(paste0('(',c('cos','sin'),i,'|',fft_interaction_term,')'),sep='',collapse='+')
+          fft_formula=paste(fft_formula,new_term,sep='+')
+        }
+        else{
         fft_formula=paste(fft_formula,paste(c('cos','sin'),i,sep='',collapse='+'),sep='+')
+        }
       }}}
   
   list_rand_ints<-gsub(" ","",get_control("list_rand_ints",control=control),fixed=T) |> strsplit(',',fixed=T) |> unlist()
@@ -389,23 +404,140 @@ create_formula<-function(base_recipe=recipe3,control=workflow_controls){
     rand_slope_formula<-paste(list_rand_slopes,collapse =' + ')
   }
   
-  built_formula<-paste(paste0(outcome,' ~ ',
-                               paste(final_predictors,collapse=' + ')),
-                        fft_formula,rand_int_formula,rand_slope_formula,sep=' + ')
-  
+  if(!ignore_rands){
+   built_formula<-paste(paste0(outcome,' ~ ',
+                              paste(final_predictors,collapse=' + ')),
+                       fft_formula,rand_int_formula,rand_slope_formula,sep=' + ')
+  }
+  if(ignore_rands){
+    built_formula<-paste(paste0(outcome,' ~ ',
+                                paste(final_predictors,collapse=' + ')),
+                         fft_formula,sep=' + ')
+  }
   #remove trailing +, left by the paste in built_formula if one of fft_formula, 
   #rand_int_formula, or rand_slope_formula are empty strings
   total_times<-(length(list_rand_slopes)==0)+(length(list_rand_ints)==0)+(fft_terms==0)
   
   if (total_times>0){
-  for(i in 1:total_times){
+    for(i in 1:total_times){
       built_formula<-gsub("(\\+\\s* $)","",built_formula)
     }
     built_formula<-trimws(built_formula)
+  
   }
-  #repair any +  +, which indicate an empty term
-  built_formula<-gsub("\\+  \\+","\\+",built_formula)
+  built_formula <- gsub("\\+  \\+", "\\+", built_formula)  
   return(built_formula)
+}
+
+
+#' produce a list of  formula for testing combinations of random effects
+#' 
+#' @param vc defaults to best_seas vc; a tibble with a single seasonality specification typically determined
+#' by the seasonality_search process
+#' @param seasonality_formula defaults to best_seas_formula; a string containing the formula for
+#' all fixed effects in the model plus the seasonaity terms (which may include random slopes).
+#' Typically will be produced by tuning a workflowset to identify the best seasonality specification.
+#' @export
+#' @return a list of strings suitable to be coerced to formula for lmer
+#' and the specifications for random effects.  In the case where the control
+#' search_randoms = 'FALSE' , the string in seasonality_formula is returned in a list of 1
+#' 
+make_list_of_rands_formula<-function(seasonality_formula=best_seas_formula,
+                                     vc=best_seas_vc){
+  
+  if(get_control("search_randoms",vc)=="FALSE"){
+    #in this case we expect that the seasonality_formula will already contain
+    # any random effects specified (unless some process has problematically tampered
+    #with the search_randoms control)
+    
+    random_terms=gsub(',','+',paste(get_control("list_rand_ints",vc),
+                                    get_control('list_rand_slopes',vc),sep=','),fixed=T)
+    
+    list_of_formulae_rands<-list(seasonality_formula)
+    cat("Nota Bene: make_list_of_rands_formula has been called 
+        when search_randoms is FALSE\n Output is a single formula string matchting seasonality_formula.")
+  }
+  
+  else{
+    list_of_formulae_rands<-vector('list')
+    #get all possible terms
+    terms_to_add<-paste(get_control("list_rand_ints",best_vc),
+                        get_control('list_rand_slopes',best_vc),sep=',') %>% strsplit(split=',') %>% unlist()
+    #create all_combinations using collapsed combn output
+    pastey<-function(x){paste(unlist(x),collapse=" + ")}
+    all_combinations<-unlist(lapply(1:length(terms_to_add),function(x) combn(terms_to_add,x,FUN=pastey,simplify = F)))
+    
+    for(i in 1:length(all_combinations)){
+      list_of_formulae_rands[[i]]<-paste0(seasonality_formula,'+',all_combinations[[i]])
+    }
+    list_of_formulae_rands<-append(list_of_formulae_rands,seasonality_formula)
+  }
+  return(list_of_formulae_rands)
+}
+
+#' creates a tidymodels workflow from a a recipe and a model
+#' @param this_formula defaults to built_formula; a string suitable to be coerced to a formula for lmer
+#' @param recipe_to_use defaults to recipe3; a recipe with roles for predictor, outcome, time_id, and groups
+#' @export
+#' @example 
+#' @importFrom workflows workflow
+assemble_workflow<-function(this_formula=built_formula,recipe_to_use=recipe3){
+  if(grepl("\\|",this_formula)){tune_spec<-linear_reg(engine='lmer')} else{
+    tune_spec<-linear_reg(engine='lm')}
+  #  hardhat::extract_parameter_set_dials(reg_wf)|> finalize(data1) 
+  #need to build a formula with random effects specs for stan_glmer
+  
+  return(workflow() |>  add_recipe(recipe_to_use) |> 
+           add_model(tune_spec,formula=as.formula(this_formula)))
+}
+
+#' create a list of model formula (per the rules for lmer()) with different
+#' seasonality specifications as listed in the configuration tibble.
+#' 
+#' @param vc defaults to workflow_controls; a tibble with R_name and Value columns
+#' where R_name contains the control name and Value is it's value
+#' @param recipe_to_use defaults to recipe3; a recipes::recipe with pre-modeling transformations and
+#' variable roles; the outcome, predictor, group, and time_id roles are used in determining
+#' the formula.
+#' @return a list with names formulae and configs, formulae is a list of strings suitable
+#'  to be coerced to a formula and passed to lmer.  configs is a list of tibbles with information like vc,
+#'   but reset to match a single seasonality specification.  If search_seasonality is set to FALSE in
+#'   the config table, the two lists have a single formula containing the specified seasonality
+#'   and no random terms.  A note is printed to the console in this case.
+#' @example 
+#' @export
+#' @importFrom 
+make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
+  #use search_randoms control value to determine if formula created here will include
+  #random effects not in seaonslity. If search_randoms if TRUE, we do want to ignore
+  #random effects specification (for later searching)
+  are_we_ignoring_rands = get_control('search_randoms')=="TRUE"
+  if(get_control("search_seasonality")=="FALSE"){
+    list_of_configs=list(vc)
+    formulae=list(create_formula(recipe_to_use,vc,ignore_rands=are_we_ignoring_rands))
+    cat("Nota Bene: make_list_off_formulae is called but search_seaonality is FALSE")
+  }else{
+    fft_interact_options<-get_control("interaction_fft") |> strsplit(split=',',fixed=T) |> unlist()
+    if(!("" %in% fft_interact_options)){fft_interact_options=c("",fft_interact_options)}
+    
+    fft_count_options<-get_control("fft_terms") |> unlist() |> as.numeric()
+    #vc<-workflow_controls
+    list_of_configs<-vector('list')
+    idx=0
+    for (this_fterms in 0:fft_count_options){
+      for (iterm in 1:length(fft_interact_options)){
+        idx=idx+1
+        this_iterm=fft_interact_options[iterm]
+        
+        this_vc=vc |> mutate(Value=ifelse(R_name=='interaction_fft',this_iterm,Value),
+                             Value=ifelse(R_name=='fft_terms',this_fterms,Value),
+                             Value=ifelse(R_name=='search_seasonality',"FALSE",Value))
+        list_of_configs[[idx]]=this_vc
+      }
+    }
+  }
+  formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
+  return(list(formulae=formulae,configs=list_of_configs))
 }
 
 
