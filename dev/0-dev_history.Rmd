@@ -22,7 +22,7 @@ fusen::fill_description(
       person("Lorenzen", "Ted", email = "lorenze3@gmail.com", role = c("aut", "cre")
     )
   ),
-  Remotes = c('github::rmcelreath/rethinking, github::stan-dev/cmdstanr, githb::tidymodels/dials')
+  Remotes = c('github::rmcelreath/rethinking, github::stan-dev/cmdstanr')
 ),
 overwrite=T
 )
