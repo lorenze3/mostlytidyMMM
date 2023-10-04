@@ -5,7 +5,12 @@
 \title{reads the variable controls configuration and dataset to create a recipe,
 which may include tuning dials}
 \usage{
-create_recipe(data_to_use = data1, vc = var_controls, mc = transform_controls)
+create_recipe(
+  data_to_use = data1,
+  vc = var_controls,
+  mc = transform_controls,
+  wc = workflow_controls
+)
 }
 \arguments{
 \item{data_to_use}{defaults to data1, should be a tibble or tidytable that
@@ -16,6 +21,10 @@ variable roles (ie role and role 2 and varname are included inthe tibble).}
 
 \item{mc}{defaults to transform_controls; a tibble with hyperparameter ranges
 by role (ie media type)}
+
+\item{wc}{defaults to workflow_controls; a tibble with R_name and Value columns
+where R_name holds control names expected by several of this package's functions
+and Value is the value of those controls}
 }
 \value{
 a recipe with roles, adstock and saturation steps defined by controls table

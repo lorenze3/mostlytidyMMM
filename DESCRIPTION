@@ -1,33 +1,13 @@
 Package: mostlytidyMMM
-Title: A Complete MMM Workflow In R
 Version: 0.0.0.9000
-Authors@R: 
-    person("Lorenzen", "Ted", , "lorenze3@gmail.com", role = c("aut", "cre"))
-Description: a hybrid MMM approach built on tidymodels and McElreath's
-    rethinking packages.
+Title: A Complete MMM Workflow In R
+Description: a hybrid MMM approach built on tidymodels and McElreath's rethinking packages.
+Authors@R: person(given = "Lorenzen",
+       family = "Ted",
+       role = c("aut", "cre"),
+       email = "lorenze3@gmail.com")
 License: MIT + file LICENSE
-Imports: 
-    dials,
-    dplyr,
-    recipes,
-    rethinking,
-    rlang,
-    stats,
-    stringr,
-    tibble,
-    tune,
-    workflows
-Suggests: 
-    knitr,
-    readxl,
-    rmarkdown,
-    testthat,
-    tidyverse
-VignetteBuilder: 
-    knitr
-Remotes: 
-    rmcelreath/rethinking
-Config/fusen/version: 0.5.2.9000
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
+Remotes: github::rmcelreath/rethinking, github::stan-dev/cmdstanr
