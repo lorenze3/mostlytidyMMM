@@ -17,22 +17,35 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![Codecov test coverage](https://codecov.io/gh/lorenze3/mostlytidyMMM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/lorenze3/mostlytidyMMM?branch=main)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 ## Intent
 
-mostlytidyMMM is a toolkit for building a marketing mix model.  tidymodels provides the hyperparameter tuning and McElreath's rethinking builds a link to Stan to constrained, prior informed regression modeling.
+mostlytidyMMM is a toolkit for building a marketing mix model.  
 
-This package is similar in intent to Meta's [Robyn]() and Google's [lightweightMMM]() in that it offers basic MMM capability without an analyst needing to choose write their own functions.  In terms of philosophy of MMM, this package is somewhere between Robyn and lightweightMMM -- it uses pre-modelling transformations for time delayed effects (i.e. adstocking) and saturation transformations like Robyn, but the final coefficients are estimated via MCMC to take advantage of the ability of bayesian regression to utilize prior information to inform coefficients.
+Similar to Meta's [Robyn](https://facebookexperimental.github.io/Robyn/) and Google's [lightweightMMM](https://github.com/google/lightweight_mmm) in that it offers basic MMM capability without an analyst needing to choose write their own functions.  In terms of philosophy of MMM, this package is somewhere between Robyn and lightweightMMM -- it uses pre-modelling transformations for time delayed effects (i.e. adstocking) and saturation transformations like Robyn, but the final coefficients are estimated via MCMC in Stan to take advantage of constrained, prior informed regression models.
 
-Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst for level of data granularity and model form (*welp*, currently only allows normal regression, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).
+[tidymodels](https://github.com/tidymodels/tidymodels) provides the hyperparameter tuning and McElreath's [rethinking](https://github.com/rmcelreath/rethinking) builds a link to Stan..  To take those two foundations and build an MMM package, mostlytidyMMM has recipe steps for adstock and saturation, functions to build workflowsets out of multiple formulas, a translator from a string formula to rethinking::ulam() input, and a custom decomposition formula.
 
-Robyn's hyperparameter search using the efficient frontier between multiple objectives is replaced with tidymodel's tune packages, although ultimately the metric used for tuning is up to the analyst.  Additionally, mostlytidyMMM is setup to test multiple model specifications in the form of including varying random effects (both intercepts and slope).
+Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst to choose the level of data granularity and model form (*welp*, currently only allows normal regression, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).
 
-In general, mostlytidyMMM allows an analyst with a table ready for MMM to specify a reasonable set of models and priors in an .xlsx configuration file and quickly hone on a 'final' model specification.
+In general, mostlytidyMMM allows an analyst with a table ready for MMM to specify a reasonable set of models and priors in an .xlsx configuration file and quickly hone in on a 'final' model specification.
 
+## On the Roadmap
+
+I think the following features are in rough priority order:
+
+* visualizing response functions
+* poisson and log-normal regression
+* a budget optimizer
+
+## Thank thinkr for FUSEN!
+
+This package is a package, and not a bunch of functions, thanks to thinkr's [fusen](https://thinkr-open.github.io/fusen/).  I highly recommend it.
 
 ## Installation
+
 After installing [cmdstanr](https://mc-stan.org/cmdstanr/) and [rethinking](https://github.com/rmcelreath/rethinking), mostlytidyMMM can be installed directly from [GitHub](https://github.com/) via:
 
 ``` r
@@ -50,10 +63,10 @@ When no tuning is required, a few function calls translate the .xlsx file into a
 
 First we read in the configuration file:
 ```{r example}
-library(mostlytidyMMM)
-library(tidyverse)
-library(tidymodels)
-library(rethinking)
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
+suppressMessages(suppressWarnings( library(tidyverse)))
+suppressMessages(suppressWarnings(library(tidymodels)))
+suppressMessages(suppressWarnings(library(rethinking)))
 
 
 control_file<-system.file('no_tuning_example.xlsx',package='mostlytidyMMM')

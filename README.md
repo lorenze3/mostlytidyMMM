@@ -7,41 +7,55 @@
 
 [![Codecov test
 coverage](https://codecov.io/gh/lorenze3/mostlytidyMMM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/lorenze3/mostlytidyMMM?branch=main)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 ## Intent
 
 mostlytidyMMM is a toolkit for building a marketing mix model.
-tidymodels provides the hyperparameter tuning and McElreath’s rethinking
-builds a link to Stan to constrained, prior informed regression
-modeling.
 
-This package is similar in intent to Meta’s [Robyn]() and Google’s
-[lightweightMMM]() in that it offers basic MMM capability without an
-analyst needing to choose write their own functions. In terms of
-philosophy of MMM, this package is somewhere between Robyn and
-lightweightMMM – it uses pre-modelling transformations for time delayed
-effects (i.e. adstocking) and saturation transformations like Robyn, but
-the final coefficients are estimated via MCMC to take advantage of the
-ability of bayesian regression to utilize prior information to inform
-coefficients.
+Similar to Meta’s [Robyn](https://facebookexperimental.github.io/Robyn/)
+and Google’s [lightweightMMM](https://github.com/google/lightweight_mmm)
+in that it offers basic MMM capability without an analyst needing to
+choose write their own functions. In terms of philosophy of MMM, this
+package is somewhere between Robyn and lightweightMMM – it uses
+pre-modelling transformations for time delayed effects (i.e. adstocking)
+and saturation transformations like Robyn, but the final coefficients
+are estimated via MCMC in Stan to take advantage of constrained, prior
+informed regression models.
+
+[tidymodels](https://github.com/tidymodels/tidymodels) provides the
+hyperparameter tuning and McElreath’s
+[rethinking](https://github.com/rmcelreath/rethinking) builds a link to
+Stan.. To take those two foundations and build an MMM package,
+mostlytidyMMM has recipe steps for adstock and saturation, functions to
+build workflowsets out of multiple formulas, a translator from a string
+formula to rethinking::ulam() input, and a custom decomposition formula.
 
 Unlike either of those packages, mostlytidyMMM allows for complete
-control on the part of the analyst for level of data granularity and
-model form (*welp*, currently only allows normal regression, but it is a
-hierarchical bayesian regression and the specification of that is
-entirely up to the analyst).
-
-Robyn’s hyperparameter search using the efficient frontier between
-multiple objectives is replaced with tidymodel’s tune packages, although
-ultimately the metric used for tuning is up to the analyst.
-Additionally, mostlytidyMMM is setup to test multiple model
-specifications in the form of including varying random effects (both
-intercepts and slope).
+control on the part of the analyst to choose the level of data
+granularity and model form (*welp*, currently only allows normal
+regression, but it is a hierarchical bayesian regression and the
+specification of that is entirely up to the analyst).
 
 In general, mostlytidyMMM allows an analyst with a table ready for MMM
 to specify a reasonable set of models and priors in an .xlsx
-configuration file and quickly hone on a ‘final’ model specification.
+configuration file and quickly hone in on a ‘final’ model specification.
+
+## On the Roadmap
+
+I think the following features are in rough priority order:
+
+- visualizing response functions
+- poisson and log-normal regression
+- a budget optimizer
+
+## Thank thinkr for FUSEN!
+
+This package is a package, and not a bunch of functions, thanks to
+thinkr’s [fusen](https://thinkr-open.github.io/fusen/). I highly
+recommend it.
 
 ## Installation
 
@@ -67,76 +81,10 @@ file into a fitted model.
 First we read in the configuration file:
 
 ``` r
-library(mostlytidyMMM)
-library(tidyverse)
-#> Warning: package 'tidyverse' was built under R version 4.1.3
-#> -- Attaching packages --------------------------------------- tidyverse 1.3.2 --
-#> v ggplot2 3.3.6     v purrr   0.3.4
-#> v tibble  3.2.1     v dplyr   1.1.3
-#> v tidyr   1.2.1     v stringr 1.5.0
-#> v readr   2.1.2     v forcats 0.5.1
-#> Warning: package 'ggplot2' was built under R version 4.1.3
-#> Warning: package 'tibble' was built under R version 4.1.3
-#> Warning: package 'tidyr' was built under R version 4.1.3
-#> -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-#> x dplyr::filter() masks stats::filter()
-#> x dplyr::lag()    masks stats::lag()
-library(tidymodels)
-#> Warning: package 'tidymodels' was built under R version 4.1.3
-#> -- Attaching packages -------------------------------------- tidymodels 1.0.0 --
-#> v broom        1.0.1     v rsample      1.1.0
-#> v dials        1.0.0     v tune         1.0.1
-#> v infer        1.0.3     v workflows    1.1.0
-#> v modeldata    1.0.1     v workflowsets 1.0.0
-#> v parsnip      1.0.2     v yardstick    1.1.0
-#> v recipes      1.0.1
-#> Warning: package 'broom' was built under R version 4.1.3
-#> Warning: package 'dials' was built under R version 4.1.3
-#> Warning: package 'infer' was built under R version 4.1.3
-#> Warning: package 'modeldata' was built under R version 4.1.3
-#> Warning: package 'parsnip' was built under R version 4.1.3
-#> Warning: package 'recipes' was built under R version 4.1.3
-#> Warning: package 'rsample' was built under R version 4.1.3
-#> Warning: package 'tune' was built under R version 4.1.3
-#> Warning: package 'workflows' was built under R version 4.1.3
-#> Warning: package 'workflowsets' was built under R version 4.1.3
-#> Warning: package 'yardstick' was built under R version 4.1.3
-#> -- Conflicts ----------------------------------------- tidymodels_conflicts() --
-#> x scales::discard() masks purrr::discard()
-#> x dplyr::filter()   masks stats::filter()
-#> x recipes::fixed()  masks stringr::fixed()
-#> x dplyr::lag()      masks stats::lag()
-#> x yardstick::spec() masks readr::spec()
-#> x recipes::step()   masks stats::step()
-#> * Use tidymodels_prefer() to resolve common conflicts.
-library(rethinking)
-#> Loading required package: cmdstanr
-#> This is cmdstanr version 0.5.0
-#> - CmdStanR documentation and vignettes: mc-stan.org/cmdstanr
-#> - CmdStan path: C:/Users/loren/Documents/.cmdstan/cmdstan-2.29.2
-#> - CmdStan version: 2.29.2
-#> Loading required package: posterior
-#> Warning: package 'posterior' was built under R version 4.1.3
-#> This is posterior version 1.2.1
-#> 
-#> Attaching package: 'posterior'
-#> 
-#> The following objects are masked from 'package:stats':
-#> 
-#>     mad, sd, var
-#> 
-#> Loading required package: parallel
-#> rethinking (Version 2.40)
-#> 
-#> Attaching package: 'rethinking'
-#> 
-#> The following object is masked from 'package:purrr':
-#> 
-#>     map
-#> 
-#> The following object is masked from 'package:stats':
-#> 
-#>     rstudent
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
+suppressMessages(suppressWarnings( library(tidyverse)))
+suppressMessages(suppressWarnings(library(tidymodels)))
+suppressMessages(suppressWarnings(library(rethinking)))
 
 
 control_file<-system.file('no_tuning_example.xlsx',package='mostlytidyMMM')
@@ -212,7 +160,7 @@ statements:
                  grand_intercept_prior='normal(45,25)') )
 #> [[1]]
 #> sales ~ normal(big_model, big_sigma)
-#> <environment: 0x000000002d74df80>
+#> <environment: 0x000000002d2cc4d8>
 #> 
 #> [[2]]
 #> big_model <- big_model_1 + a0 + store_int[store_id] + b_TV1_interact_store[store_id]
@@ -224,55 +172,55 @@ statements:
 #> 
 #> $b_TV1_interact_store
 #> b_TV1_interact_store[store_id] ~ normal(0, slope_sigma)
-#> <environment: 0x000000002deaeea0>
+#> <environment: 0x000000002d811b60>
 #> 
 #> $store
 #> store_int[store_id] ~ normal(65, int_sigma)
-#> <environment: 0x000000002de914a8>
+#> <environment: 0x000000002d801688>
 #> 
 #> $b_trend
 #> b_trend ~ normal(0, 10)
-#> <environment: 0x000000002deb56f0>
+#> <environment: 0x000000002d816490>
 #> 
 #> $b_sin1
 #> b_sin1 ~ normal(0, 10)
-#> <environment: 0x000000002deb56f0>
+#> <environment: 0x000000002d816490>
 #> 
 #> $b_cos1
 #> b_cos1 ~ normal(0, 10)
-#> <environment: 0x000000002deb56f0>
+#> <environment: 0x000000002d816490>
 #> 
 #> $b_price
 #> b_price ~ normal(-20, 10)
-#> <environment: 0x000000002dd91400>
+#> <environment: 0x000000002d67ece0>
 #> 
 #> $b_TV1
 #> b_TV1 ~ normal(6, 10)
-#> <environment: 0x000000002dd99410>
+#> <environment: 0x000000002d68ddf8>
 #> 
 #> $b_TV2
 #> b_TV2 ~ normal(6, 10)
-#> <environment: 0x000000002dd9b220>
+#> <environment: 0x000000002d68fa08>
 #> 
 #> $b_ProgVideo1
 #> b_ProgVideo1 ~ normal(2, 10)
-#> <environment: 0x000000002dd9cdf8>
+#> <environment: 0x000000002d691618>
 #> 
 #> [[13]]
 #> a0 ~ normal(45, 25)
-#> <environment: 0x000000002d74df80>
+#> <environment: 0x000000002d2cc4d8>
 #> 
 #> [[14]]
 #> big_sigma ~ half_cauchy(0, 100)
-#> <environment: 0x000000002d74df80>
+#> <environment: 0x000000002d2cc4d8>
 #> 
 #> [[15]]
 #> int_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d74df80>
+#> <environment: 0x000000002d2cc4d8>
 #> 
 #> [[16]]
 #> slope_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d74df80>
+#> <environment: 0x000000002d2cc4d8>
 
 
 (bounds_for_ulam<-make_bound_statements(variable_controls=var_controls))
