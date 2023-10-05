@@ -136,12 +136,13 @@ For this example, let's we'll remove the most complicated and  ignore the rank d
 ```{r assemble}
 list_of_flows<-lapply(formulae,assemble_workflow,recipe3)
 
-tune_all_these<-as_workflow_set(!!!list_of_flows[1:2])
+tune_all_these<-as_workflow_set(!!!list_of_flows)
 
 time_id_var = variables |>filter(role=='time_id')|>select(varname)|>unlist()
 
+#noe use of sliding_period for 'resampling'
 data_splits<-sliding_period(data1 |>ungroup()|> arrange(across(all_of(!!time_id_var))),!!time_id_var,period='week',
-                            lookback=52,assess_stop=4,step=12)
+                             lookback=90,assess_stop=4,step=5)
 
 #note that we can't say we are doing a good job detecting seasonality with 100 week training periods . . 
 fft_selecting_tune_results<-workflow_map(tune_all_these,grid=5,resamples=data_splits)
@@ -191,7 +192,7 @@ names(list_of_flows2)<-as.character(1:length(list_of_formulae_rands))
 tune_all_these2<-as_workflow_set(!!!list_of_flows2)
 
 data_splits<-sliding_period(data1 |>ungroup()|> arrange(across(all_of(!!time_id_var))),!!time_id_var,period='week',
-                            lookback=90,assess_stop=4,step=12)
+                            lookback=90,assess_stop=4,step=5)
 
 rands_selecting_tune<-workflow_map(tune_all_these2,grid=1,resamples=data_splits)
 
@@ -228,7 +229,7 @@ final_fit_model<-rethinking::ulam(formula_list_for_final,
                sample = T,
                #pars=c('b_week','a0','store_int',paste0('b_',final_predictors),'big_sigma','int_sigma'),
                cmdstan = T,
-               file='ulam_fit_test_rs',
+               file='final_fit_model.RDS',
                cores=4,
                declare_all_data=F,
                messages=F

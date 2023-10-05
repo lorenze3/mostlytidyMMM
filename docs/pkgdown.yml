@@ -2,7 +2,7 @@ pandoc: 3.1.1
 pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
+  demonstration-of-parts-of-the-package: demonstration-of-parts-of-the-package.html
   hyperparameter-and-formula-search: hyperparameter-and-formula-search.html
-  walkthrough: walkthrough.html
-last_built: 2023-10-05T06:57Z
+last_built: 2023-10-05T13:07Z
 

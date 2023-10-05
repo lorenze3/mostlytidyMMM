@@ -1,8 +1,8 @@
 ---
-title: "walkthrough"
+title: "Demonstration of Parts of the Package"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{walkthrough}
+  %\VignetteIndexEntry{demonstration-of-parts-of-the-package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

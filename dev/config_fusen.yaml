@@ -19,10 +19,10 @@ flat_full.Rmd:
   - R/make_bound_statements.R
   - R/step_saturation.R
   tests: tests/testthat/test-step_saturation.R
-  vignettes: vignettes/walkthrough.Rmd
+  vignettes: vignettes/demonstration-of-parts-of-the-package.Rmd
   inflate:
     flat_file: dev/flat_full.Rmd
-    vignette_name: walkthrough
+    vignette_name: Demonstration of Parts of the Package
     open_vignette: true
     check: true
     document: true
