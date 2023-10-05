@@ -82,6 +82,11 @@ bulk_add_role<-function(this_recipe,vars_to_append_roles=var_controls$varname[!i
 #' @example
 #' 
 add_steps_media<-function(this_recipe,var_specific_controls=var_controls,media_controls=transform_controls){
+  
+  #get time_id -- critical for adstock steps
+  this_time_id<-var_specific_controls |> filter(role=='time_id') |>
+    select(varname)|>unlist()
+  
   #two cases -- specific variable settings in var_specific_controls or not.
   
   #find var specific controls here.  
@@ -107,7 +112,7 @@ add_steps_media<-function(this_recipe,var_specific_controls=var_controls,media_c
       if(is.na(var_specific_controls$saturation_speed[specific])){this_saturation_speed<-tune(saturation_speed_id)}else{this_saturation_speed<-var_specific_controls$saturation_speed[specific]}
       if(is.na(var_specific_controls$retention[specific])){this_retention<-tune(retention_id)}else{this_retention<-var_specific_controls$retention[specific]}
       
-      this_recipe<-this_recipe |> step_adstock(!!this_var,retention=this_retention,groups = these_groups) |>
+      this_recipe<-this_recipe |> step_adstock(!!this_var,retention=this_retention,groups = these_groups,time_id=this_time_id) |>
         step_saturation(!!this_var,asymptote=this_asymptote,saturation_speed=this_saturation_speed)
     }
     #don't need to add steps for any of those variables, so make list to keep out in the settings by role
@@ -135,7 +140,7 @@ add_steps_media<-function(this_recipe,var_specific_controls=var_controls,media_c
                 !(variable %in% !!vars_to_skip) )|> select(variable) |> distinct() |> unlist()
         if(length(vars_with_role)>0){
           this_recipe<-this_recipe |> step_adstock(all_of(vars_with_role),
-                                                    retention = this_retention,groups = these_groups) |> 
+                                                    retention = this_retention,groups = these_groups,time_id=this_time_id) |> 
             step_saturation(all_of(vars_with_role),
                       asymptote=this_asymptote,
                       saturation_speed=this_saturation_speed)
@@ -143,7 +148,7 @@ add_steps_media<-function(this_recipe,var_specific_controls=var_controls,media_c
        }
       else{
         this_recipe<-this_recipe |> step_adstock(has_role(!!this_role),
-                                                  retention = this_retention,groups=these_groups) |> 
+                                                  retention = this_retention,groups=these_groups,time_id=this_time_id) |> 
           step_saturation(has_role(!!this_role),
                           asymptote=this_asymptote,
                           saturation_speed=this_saturation_speed)

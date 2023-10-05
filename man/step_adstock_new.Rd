@@ -11,6 +11,7 @@ step_adstock_new(
   retention,
   adstocks,
   groups,
+  time_id,
   options,
   skip,
   id

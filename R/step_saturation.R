@@ -23,17 +23,19 @@
 #' mktdata<-rbind(tibble(prod='brand',store='store1',
 #'                       sales=c(100.,100.,100.,100.,100.),
 #'                       tv=c(10.,100.,0.,0.,100),
-#'                       search=c(0,10,20,50.,50.)) ,
+#'                       search=c(0,10,20,50.,50.),
+#'                       week=c(1,2,3,4,5)) ,
 #'                tibble(prod='brand',store='store2',
 #'                       sales=c(10.,10,10,10,10),tv=c(0.,0,0,0,0),
-#'                       search=c(0.,2,2,0,0) ) ) |> 
+#'                       search=c(0.,2,2,0,0) ,
+#'                       week=c(1,2,3,4,5)) ) |> 
 #'   group_by(prod,store)
 #'
-#' mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000) |> group_by(prod,store)
+#' mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000,week=6) |> group_by(prod,store)
 #'
 #' #build a recipe with two different adstock steps -- could be done in one step
 #' rec_obj <-  recipe(sales ~ ., data = mktdata) |> step_adstock(tv,retention=.5,groups=c('prod','store')) |>
-#'   step_adstock(search,retention=.5,groups=c('prod','store')) |>
+#'   step_adstock(search,retention=.5,groups=c('prod','store'),time_id='week') |>
 #'   prep(training = mktdata)
 #'
 #' #showing off the custom print function
@@ -50,11 +52,29 @@
 #'
 #' rec_both_steps<-recipe(sales~.,data=mktdata) |> 
 #'   step_adstock(tv,retention=.1) |> step_saturation(tv,asymptote=1000,saturation_speed=.001) |>
-#'   step_adstock(search,retention=.1)  |> prep()
+#'   step_adstock(search,retention=.1,time_id='week')  |> prep()
 #'
 #'
 #' bake(rec_both_steps,mktdata)
 #'
+#' #And adstock steps throw an error if time series isn't regular -- last point is two weeks 
+#' mktdata3<-rbind(tibble(prod='brand',store='store1',
+#'                       sales=c(100.,100.,100.,100.,100.),
+#'                       tv=c(10.,100.,0.,0.,100),
+#'                       search=c(0,10,20,50.,50.),
+#'                       week=c(1,2,3,4,6)) ,
+#'                tibble(prod='brand',store='store2',
+#'                       sales=c(10.,10,10,10,10),tv=c(0.,0,0,0,0),
+#'                       search=c(0.,2,2,0,0) ,
+#'                       week=c(1,2,3,4,6)) ) |> 
+#'   group_by(prod,store)
+#'
+#' #not run to allow vignette to knit -- uncomment to see error
+#'
+#' # rec1<-recipe(mktdata3) |> step_adstock(search,retention=.1,groups=c('prod','store'),
+#' #                                         time_id='week')|>prep()
+#'
+#' #bake(rec1,mktdata3)
 step_adstock <- function(
     recipe, 
     ..., 
@@ -64,6 +84,7 @@ step_adstock <- function(
     skip = FALSE,
     retention=.5,
     groups=c('prod','store'),
+    time_id='week',
     adstocks=NULL,
     id = rand_id("adstock")
 ) {
@@ -79,7 +100,8 @@ step_adstock <- function(
       id = id,
       retention=retention,
       adstocks=adstocks,
-      groups=groups
+      groups=groups,
+      time_id=time_id
     )
   )
 }
@@ -93,21 +115,22 @@ step_adstock <- function(
 #' 
 #' @example
 #' 
-step_adstock_new <-   function(terms, role, trained, retention, adstocks, groups,options, skip, id) {
-    step(
-      subclass = "adstock", 
-      terms = terms,
-      role = role,
-      trained = trained,
-      adstocks=adstocks,
-      retention=retention,
-      groups=groups,
-      options = options,
-      skip = skip,
-      id = id
-      
-    )
-  }
+step_adstock_new <-   function(terms, role, trained, retention, adstocks, groups,time_id,options, skip, id) {
+  step(
+    subclass = "adstock", 
+    terms = terms,
+    role = role,
+    trained = trained,
+    adstocks=adstocks,
+    retention=retention,
+    groups=groups,
+    time_id=time_id,
+    options = options,
+    skip = skip,
+    id = id
+    
+  )
+}
 
 #' Prep method for step_adstock
 #' @param x step or recipe
@@ -134,6 +157,7 @@ prep.step_adstock <- function(x, training, info = NULL, ...) {
                    trained=TRUE,
                    retention=x$retention,
                    groups=x$groups,
+                   time_id=x$time_id,
                    adstocks=col_names,
                    options=x$options,
                    skip=x$skip,
@@ -166,29 +190,51 @@ get_adstock<-function(x,retain){
 #' @example
 #' 
 #' @importFrom recipes bake
+#' @importFrom rlang abort
+#' @importFrom rlang warn
 #' 
 bake.step_adstock<-function(object,new_data,...){
-  vars<-names(object$adstocks)
-  groupings<-object$groups#as.character(groups(new_data))
-
-  if(length(groupings)==0){rlang::warn("No grouping vars in data for step_adstock -- assumes data is one continous time series!!!  \nIf this isn't true, group and sort the data appropriately!")}
   
-  stocks<-new_data |> group_by(across(all_of(groupings))) |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
+  
+  vars<-names(object$adstocks)
+  groupings<-object$groups
+  this_time<-object$time_id
+  
+     
+  if(length(groupings)==0){
+    rlang::warn("No grouping vars in data for step_adstock -- assumes data is one continous time series!!!  \nIf this isn't true, group and sort the data appropriately!")
+    new_data<-new_data |>
+      arrange(across(all_of(this_time)))
+    
+    stocks<- new_data |> reframe(across(all_of(vars),
+                                        function(x){get_adstock(x,object$retention)}))
+
+    new_data[,vars]<-stocks[,vars]
+    } else{
+  
+     #check if we have ragged time intervals
+     new_data|>arrange(across(all_of(c(groupings,this_time)))) |>
+       group_by(across(all_of(groupings))) |>
+       mutate(lag_time=lag(across(all_of(this_time))))->intermediate
+     intermediate$delta=as.numeric(unlist(intermediate$lag_time))-
+       as.numeric(unlist(intermediate[this_time]))
+     intermediate|> summarise(min=min(delta,na.rm=T),max=max(delta,na.rm=T))|>mutate(
+       range=max-min) |>filter(range!=0,!is.na(range),!is.infinite(min),!is.infinite(max))->problems
+     if(nrow(problems)>0){
+       rlang::abort('non-constant time intervals will not work with adstock')}
+     
+  new_data<-new_data |>  group_by(across(all_of(groupings)))|> 
+    arrange(across(all_of(c(groupings,this_time))))
+  
+  
+  stocks<- new_data |> reframe(across(all_of(vars), 
+                                  function(x){get_adstock(x,object$retention)} ))
   
   new_data[,vars]<-stocks[,vars]
-  
-  
-  if(length(groupings)>0){
-    stocks<-new_data |> group_by(across(all_of(groupings))) |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
-    new_data<-as_tibble(new_data) |> group_by(across(all_of(groupings)))
-  }
-  else{
-    stocks<-new_data |> reframe(across(all_of(vars), function(x){get_adstock(x,object$retention)} ))
-    
-  }
+   }
   return(new_data)
-  
 }
+
 
 #' custom print method for adstock steps
 #' @param x is recipe or step

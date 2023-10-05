@@ -211,17 +211,19 @@ After inflating the template
 <span><span class="va">mktdata</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'store1'</span>,</span>
 <span>                      sales<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span><span class="op">)</span>,</span>
 <span>                      tv<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10.</span>,<span class="fl">100.</span>,<span class="fl">0.</span>,<span class="fl">0.</span>,<span class="fl">100</span><span class="op">)</span>,</span>
-<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span>,<span class="fl">20</span>,<span class="fl">50.</span>,<span class="fl">50.</span><span class="op">)</span><span class="op">)</span> ,</span>
+<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span>,<span class="fl">20</span>,<span class="fl">50.</span>,<span class="fl">50.</span><span class="op">)</span>,</span>
+<span>                      week<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> ,</span>
 <span>               <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'store2'</span>,</span>
 <span>                      sales<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10.</span>,<span class="fl">10</span>,<span class="fl">10</span>,<span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span>,tv<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
-<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span> <span class="op">)</span> <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span> ,</span>
+<span>                      week<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">prod</span>,<span class="va">store</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">mktdata2</span><span class="op">&lt;-</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'all'</span>,sales<span class="op">=</span><span class="fl">100</span>,tv<span class="op">=</span><span class="fl">1000</span>,search<span class="op">=</span><span class="fl">1000</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">prod</span>,<span class="va">store</span><span class="op">)</span></span>
+<span><span class="va">mktdata2</span><span class="op">&lt;-</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'all'</span>,sales<span class="op">=</span><span class="fl">100</span>,tv<span class="op">=</span><span class="fl">1000</span>,search<span class="op">=</span><span class="fl">1000</span>,week<span class="op">=</span><span class="fl">6</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">prod</span>,<span class="va">store</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#build a recipe with two different adstock steps -- could be done in one step</span></span>
 <span><span class="va">rec_obj</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">sales</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">mktdata</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">tv</span>,retention<span class="op">=</span><span class="fl">.5</span>,groups<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'prod'</span>,<span class="st">'store'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">search</span>,retention<span class="op">=</span><span class="fl">.5</span>,groups<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'prod'</span>,<span class="st">'store'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">search</span>,retention<span class="op">=</span><span class="fl">.5</span>,groups<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'prod'</span>,<span class="st">'store'</span><span class="op">)</span>,time_id<span class="op">=</span><span class="st">'week'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span>training <span class="op">=</span> <span class="va">mktdata</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#showing off the custom print function</span></span>
@@ -232,7 +234,7 @@ After inflating the template
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;       role #variables</span></span>
 <span><span class="co">#&gt;    outcome          1</span></span>
-<span><span class="co">#&gt;  predictor          4</span></span>
+<span><span class="co">#&gt;  predictor          5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Training data contained 10 data points and no missing data.</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -243,52 +245,85 @@ After inflating the template
 <span></span>
 <span><span class="co">#see the final transformed output</span></span>
 <span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">rec_obj</span>,<span class="va">mktdata</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 x 5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 x 6</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   prod, store [2]</span></span></span>
-<span><span class="co">#&gt;    prod  store     tv search sales</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> brand store1  10     0      100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> brand store1 105    10      100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> brand store1  52.5  25      100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> brand store1  26.2  62.5    100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> brand store1 113.   81.2    100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> brand store2   0     0       10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> brand store2   0     2       10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> brand store2   0     3       10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> brand store2   0     1.5     10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> brand store2   0     0.75    10</span></span>
+<span><span class="co">#&gt;    prod  store     tv search  week sales</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> brand store1  10     0        1   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> brand store1 105    10        2   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> brand store1  52.5  25        3   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> brand store1  26.2  62.5      4   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> brand store1 113.   81.2      5   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> brand store2   0     0        1    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> brand store2   0     2        2    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> brand store2   0     3        3    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> brand store2   0     1.5      4    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> brand store2   0     0.75     5    10</span></span>
 <span></span>
 <span><span class="co">#note what happens to store = 'all' in mktdata2:</span></span>
 <span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">rec_obj</span>,<span class="va">mktdata2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 x 5</span></span></span>
+<span><span class="co">#&gt; Warning: There were 2 warnings in `summarise()`.</span></span>
+<span><span class="co">#&gt; The first warning was:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `prod = "brand"`, `store = "all"`.</span></span>
+<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
+<span><span class="co">#&gt; There were 2 warnings in `summarise()`.</span></span>
+<span><span class="co">#&gt; The first warning was:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `prod = "brand"`, `store = "all"`.</span></span>
+<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 x 6</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   prod, store [1]</span></span></span>
-<span><span class="co">#&gt;   prod  store    tv search sales</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> brand <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">1</span>000   <span style="text-decoration: underline;">1</span>000   100</span></span>
+<span><span class="co">#&gt;   prod  store    tv search  week sales</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> brand <span style="color: #BB0000;">NA</span>     <span style="text-decoration: underline;">1</span>000   <span style="text-decoration: underline;">1</span>000     6   100</span></span>
 <span></span>
 <span><span class="co">#check to make sure that per-variable application of the step_adstock and step-saturation do not break the grouping structure even though</span></span>
 <span><span class="co">#the output tibble from bake is ungrouped (irritatingly)</span></span>
 <span></span>
 <span><span class="va">rec_both_steps</span><span class="op">&lt;-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">sales</span><span class="op">~</span><span class="va">.</span>,data<span class="op">=</span><span class="va">mktdata</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">tv</span>,retention<span class="op">=</span><span class="fl">.1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/step_saturation.html">step_saturation</a></span><span class="op">(</span><span class="va">tv</span>,asymptote<span class="op">=</span><span class="fl">1000</span>,saturation_speed<span class="op">=</span><span class="fl">.001</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">search</span>,retention<span class="op">=</span><span class="fl">.1</span><span class="op">)</span>  <span class="op">|&gt;</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/step_adstock.html">step_adstock</a></span><span class="op">(</span><span class="va">search</span>,retention<span class="op">=</span><span class="fl">.1</span>,time_id<span class="op">=</span><span class="st">'week'</span><span class="op">)</span>  <span class="op">|&gt;</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span></span>
 <span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">rec_both_steps</span>,<span class="va">mktdata</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 x 5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 x 6</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Groups:   prod, store [2]</span></span></span>
-<span><span class="co">#&gt;    prod  store     tv search sales</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> brand store1  9.95  0       100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> brand store1 96.1  10       100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> brand store1 10.0  21       100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> brand store1  1.01 52.1     100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> brand store1 95.3  55.2     100</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> brand store2  0     0        10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> brand store2  0     2        10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> brand store2  0     2.2      10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> brand store2  0     0.22     10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> brand store2  0     0.022    10</span></span></code></pre></div>
+<span><span class="co">#&gt;    prod  store     tv search  week sales</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> brand store1  9.95  0         1   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> brand store1 96.1  10         2   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> brand store1 10.0  21         3   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> brand store1  1.01 52.1       4   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> brand store1 95.3  55.2       5   100</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> brand store2  0     0         1    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> brand store2  0     2         2    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> brand store2  0     2.2       3    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> brand store2  0     0.22      4    10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> brand store2  0     0.022     5    10</span></span>
+<span></span>
+<span><span class="co">#And adstock steps throw an error if time series isn't regular -- last point is two weeks </span></span>
+<span><span class="va">mktdata3</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'store1'</span>,</span>
+<span>                      sales<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span>,<span class="fl">100.</span><span class="op">)</span>,</span>
+<span>                      tv<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10.</span>,<span class="fl">100.</span>,<span class="fl">0.</span>,<span class="fl">0.</span>,<span class="fl">100</span><span class="op">)</span>,</span>
+<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">10</span>,<span class="fl">20</span>,<span class="fl">50.</span>,<span class="fl">50.</span><span class="op">)</span>,</span>
+<span>                      week<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span> ,</span>
+<span>               <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>prod<span class="op">=</span><span class="st">'brand'</span>,store<span class="op">=</span><span class="st">'store2'</span>,</span>
+<span>                      sales<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10.</span>,<span class="fl">10</span>,<span class="fl">10</span>,<span class="fl">10</span>,<span class="fl">10</span><span class="op">)</span>,tv<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>                      search<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span> ,</span>
+<span>                      week<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">prod</span>,<span class="va">store</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#not run to allow vignette to knit -- uncomment to see error</span></span>
+<span></span>
+<span><span class="co"># rec1&lt;-recipe(mktdata3) |&gt; step_adstock(search,retention=.1,groups=c('prod','store'),</span></span>
+<span><span class="co">#                                         time_id='week')|&gt;prep()</span></span>
+<span></span>
+<span><span class="co">#bake(rec1,mktdata3)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-roles-and-steps-in-bulk">Handling Roles and Steps in Bulk<a class="anchor" aria-label="anchor" href="#handling-roles-and-steps-in-bulk"></a>
@@ -418,7 +453,7 @@ formula into the requisite inputs for ulam.</p>
 <span><span class="op">(</span><span class="fu"><a href="../reference/create_ulam_list.html">create_ulam_list</a></span><span class="op">(</span>model_formula<span class="op">=</span><span class="va">formula_with_lotsa_vars</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; sales ~ normal(big_model, big_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000026e314a0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000026e46cd0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
 <span><span class="co">#&gt; big_model &lt;- big_model_1 + a0 + store_int[store_id] + b_TV1_interact_store[store_id] + </span></span>
@@ -430,51 +465,51 @@ formula into the requisite inputs for ulam.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV1_interact_store</span></span>
 <span><span class="co">#&gt; b_TV1_interact_store[store_id] ~ normal(0, slope_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002597f9c0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002591e810&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV2_interact_store</span></span>
 <span><span class="co">#&gt; b_TV2_interact_store[store_id] ~ normal(0, slope_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002597f9c0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002591e810&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $store</span></span>
 <span><span class="co">#&gt; store_int[store_id] ~ normal(65, int_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025988418&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025933bf8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_trend</span></span>
 <span><span class="co">#&gt; b_trend ~ normal(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025976f40&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025915220&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_price</span></span>
 <span><span class="co">#&gt; b_price ~ normal(-1, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025a469b0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025a68968&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV1</span></span>
 <span><span class="co">#&gt; b_TV1 ~ normal(1, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025a3bfd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025a5e578&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV2</span></span>
 <span><span class="co">#&gt; b_TV2 ~ normal(1, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025a3a748&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025a5cc08&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_ProgVideo1</span></span>
 <span><span class="co">#&gt; b_ProgVideo1 ~ normal(1, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000025a38da0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000025a595e0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[12]]</span></span>
 <span><span class="co">#&gt; a0 ~ normal(50, 50)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000026e314a0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000026e46cd0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[13]]</span></span>
 <span><span class="co">#&gt; big_sigma ~ half_cauchy(0, 100)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000026e314a0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000026e46cd0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[14]]</span></span>
 <span><span class="co">#&gt; int_sigma ~ half_cauchy(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000026e314a0&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x0000000026e46cd0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[15]]</span></span>
 <span><span class="co">#&gt; slope_sigma ~ half_cauchy(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x0000000026e314a0&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x0000000026e46cd0&gt;</span></span></code></pre></div>
 </div>
   </div>
 

@@ -12,12 +12,10 @@ pkgload::load_all(export_all = FALSE)
 ```
 
 # Setting Up a Hyper-Parameter Search by Media Channel
-A key feature of the package is the ability to set a range of adstock and saturation parameter values by media channel.
 
-This is handled by assigning role2 values to variables in the var_control tab
+First, let's import all 3 tabs of a mostlytidyMMM config file.
 
-```{r examples-dev_hyperparameterand_formula_search_rmd}
-
+```{r start}
 suppressMessages(suppressWarnings(library(recipes)))
 suppressMessages(suppressWarnings(library(tune)))
 suppressMessages(suppressWarnings(library(dials)))
@@ -27,10 +25,32 @@ suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 #get the control file:
 control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
 #get each relevant table of the control file:
-var_controls<-readxl::read_xlsx(control_file,'variables')
-transform_controls<-readxl::read_xlsx(control_file,'role controls')
+variables<-readxl::read_xlsx(control_file,'variables')
+role_controls<-readxl::read_xlsx(control_file,'role controls')
 workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
+```
 
+A key feature of the package is the ability to set a range of adstock and saturation parameter values by media channel.
+
+This is handled by assigning role2 values to varnames in the 'variables' tab.
+
+```{r examples-dev_hyperparameterand_formula_search_rmd}
+
+variables
+
+```
+
+The role2 assignment values should match the rows in the 'role controls' tab, which exists to define the range of retention and saturation parameters available to each channel/role2 value.
+
+```{r more}
+role_controls
+
+```
+
+
+And the 'workflow' tab has controls for the modeled variable, if the process needs to find final hyperparameters and if either the seasonality specification or the random effects searches will run.
+```{r more1}
+workflow_controls
 ```
 
 

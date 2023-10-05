@@ -109,17 +109,19 @@ suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 mktdata<-rbind(tibble(prod='brand',store='store1',
                       sales=c(100.,100.,100.,100.,100.),
                       tv=c(10.,100.,0.,0.,100),
-                      search=c(0,10,20,50.,50.)) ,
+                      search=c(0,10,20,50.,50.),
+                      week=c(1,2,3,4,5)) ,
                tibble(prod='brand',store='store2',
                       sales=c(10.,10,10,10,10),tv=c(0.,0,0,0,0),
-                      search=c(0.,2,2,0,0) ) ) |> 
+                      search=c(0.,2,2,0,0) ,
+                      week=c(1,2,3,4,5)) ) |> 
   group_by(prod,store)
 
-mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000) |> group_by(prod,store)
+mktdata2<-tibble(prod='brand',store='all',sales=100,tv=1000,search=1000,week=6) |> group_by(prod,store)
 
 #build a recipe with two different adstock steps -- could be done in one step
 rec_obj <-  recipe(sales ~ ., data = mktdata) |> step_adstock(tv,retention=.5,groups=c('prod','store')) |>
-  step_adstock(search,retention=.5,groups=c('prod','store')) |>
+  step_adstock(search,retention=.5,groups=c('prod','store'),time_id='week') |>
   prep(training = mktdata)
 
 #showing off the custom print function
@@ -136,11 +138,29 @@ bake(rec_obj,mktdata2)
 
 rec_both_steps<-recipe(sales~.,data=mktdata) |> 
   step_adstock(tv,retention=.1) |> step_saturation(tv,asymptote=1000,saturation_speed=.001) |>
-  step_adstock(search,retention=.1)  |> prep()
+  step_adstock(search,retention=.1,time_id='week')  |> prep()
 
 
 bake(rec_both_steps,mktdata)
 
+#And adstock steps throw an error if time series isn't regular -- last point is two weeks 
+mktdata3<-rbind(tibble(prod='brand',store='store1',
+                      sales=c(100.,100.,100.,100.,100.),
+                      tv=c(10.,100.,0.,0.,100),
+                      search=c(0,10,20,50.,50.),
+                      week=c(1,2,3,4,6)) ,
+               tibble(prod='brand',store='store2',
+                      sales=c(10.,10,10,10,10),tv=c(0.,0,0,0,0),
+                      search=c(0.,2,2,0,0) ,
+                      week=c(1,2,3,4,6)) ) |> 
+  group_by(prod,store)
+
+#not run to allow vignette to knit -- uncomment to see error
+
+# rec1<-recipe(mktdata3) |> step_adstock(search,retention=.1,groups=c('prod','store'),
+#                                         time_id='week')|>prep()
+
+#bake(rec1,mktdata3)
 ```
 
 # Handling Roles and Steps in Bulk
