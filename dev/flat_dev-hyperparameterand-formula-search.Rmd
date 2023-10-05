@@ -20,6 +20,11 @@ suppressMessages(suppressWarnings(library(recipes)))
 suppressMessages(suppressWarnings(library(tune)))
 suppressMessages(suppressWarnings(library(dials)))
 suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(workflowsets)))
+suppressMessages(suppressWarnings(library(tidymodels)))
+suppressMessages(suppressWarnings(library(multilevelmod)))
+suppressMessages(suppressWarnings(library(rethinking)))
+
 suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 
 #get the control file:
@@ -27,12 +32,12 @@ control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
 #get each relevant table of the control file:
 variables<-readxl::read_xlsx(control_file,'variables')
 role_controls<-readxl::read_xlsx(control_file,'role controls')
-workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
+workflow_controls<-readxl::read_xlsx(control_file,"workflow") 
 ```
 
 A key feature of the package is the ability to set a range of adstock and saturation parameter values by media channel.
 
-This is handled by assigning role2 values to varnames in the 'variables' tab.
+This is handled by assigning role2 values to varnames in the 'variables' tab.  Other details about each variable are also present.
 
 ```{r examples-dev_hyperparameterand_formula_search_rmd}
 
@@ -40,19 +45,216 @@ variables
 
 ```
 
-The role2 assignment values should match the rows in the 'role controls' tab, which exists to define the range of retention and saturation parameters available to each channel/role2 value.
+The role2 assignment values should match the rows in the 'role controls' tab, which exists to define the range of retention and saturation parameters available to each channel/role2 value.  
 
 ```{r more}
 role_controls
 
 ```
 
+If the variables table includes fixed values of asymptote, saturation_speed, or retention, then the recipe step for that hyper-parameter for that variable will not be set to a tuneable value.  **There is a known bug:** *If the variable table fixes any of the hyperparameters, the others are left to be searched over the default range, not the range set on the role_controls table.*
 
-And the 'workflow' tab has controls for the modeled variable, if the process needs to find final hyperparameters and if either the seasonality specification or the random effects searches will run.
+And the 'workflow' tab has controls for the modeled variable, if hyperparameter tuning will happen, and if either the seasonality specification or the random effects searches will run.
 ```{r more1}
 workflow_controls
 ```
 
+
+To demonstrate how this works, we'll import some data and prepare it. In the code block below, the add_fourier_vars(), add_groups_and_sort(), and rename_columns_per_controls are functions from the mostlytidyMMM package to use the configuration tables to prepare the data for model searching and final estimation.
+
+
+```{r dataingest}
+data1<-read.csv(system.file('example2.csv',package='mostlytidyMMM'))|>
+  rename_columns_per_controls(variable_controls=variables)|> mutate(week=as.Date(week,"%m/%d/%Y"))|>
+  add_fourier_vars(vc=variables) |>  add_groups_and_sort(vc=variables) 
+
+```
+
+Because mostlytidyMMM leverages the tidymodels' packages for model and hyperparameter tuning, it include a function to produce a recipe (ie a pre-processor) from the configuration files.
+
+```{r recipe}
+recipe3<-create_recipe(data_to_use=data1,
+                       vc=variables,
+                       mc=role_controls,
+                       wc=workflow_controls)
+
+```
+
+In this case, with the workflow_controls table looking for hyperparameter tuning (ie R_name == 'tune_this_time' has Value=="TRUE"), so the created recipe uses the tune and dials packages, which can be seen by reading the printout or checking that it needs to be tuned with the provided function:
+```{r proovetune}
+recipe3
+
+check_if_needs_tune(recipe3)
+
+```
+
+Because seasonality and duration of adstock are very likely influence each other, or at least be confoundable, mostlytidyMMM searches for those specifcations together (if both are enabled).  This is done by combining the recipe with hyperparameters set to tune() and a list of possible model formula.
+
+Note that, for speed, model testing is done with lm or lmer() and not bayesian models.  This may change over time.
+
+The make_list_of_fft_formulae does what it's name says -- note this is 4 different models to test!
+
+```{r produce-workflow-set-first-ass}
+fft_formulae0<-make_list_of_fft_formulae(workflow_controls,recipe3)
+#split the output into two lists, one for formula and one for workflow config tables:
+#list must have names for workflowsets
+formulae<-fft_formulae0[[1]]
+names(formulae)<-as.character(1:length(formulae))
+
+configs_fft_options<-fft_formulae0[[2]]
+
+length(formulae)
+formulae[[1]]
+formulae[[2]]
+formulae[[3]]
+
+```
+
+We create a workflow by combining the recipe and a model (which includes the formula).  This is wrapped in the assemble_workflow function.
+
+A list of workflows becomes a workflowset, and workflow_map runes a grid search on all of them using a time-dependent data split.  remember, this is trying 4 models and building a hyper parameter grid (on few values, using grid=5 here).
+
+For this example, let's we'll remove the most complicated and  ignore the rank deficiency warnings. . .
+
+```{r assemble}
+list_of_flows<-lapply(formulae,assemble_workflow,recipe3)
+
+tune_all_these<-as_workflow_set(!!!list_of_flows[1:2])
+
+time_id_var = variables |>filter(role=='time_id')|>select(varname)|>unlist()
+
+data_splits<-sliding_period(data1 |>ungroup()|> arrange(across(all_of(!!time_id_var))),!!time_id_var,period='week',
+                            lookback=52,assess_stop=4,step=12)
+
+#note that we can't say we are doing a good job detecting seasonality with 100 week training periods . . 
+fft_selecting_tune_results<-workflow_map(tune_all_these,grid=5,resamples=data_splits)
+
+```
+
+The workflowsets package has a nice autoplot function, but for now we'll take 'the best'.
+```{r autoplot}
+autoplot(fft_selecting_tune_results,metric='rmse')
+
+```
+
+```{r pickbest}
+id_of_best<-rank_results(fft_selecting_tune_results,rank_metric="rmse",select_best=F) |>
+  select(wflow_id) %>% slice_head(n=1) |> unlist()
+
+if(check_if_needs_tune(recipe3)){
+  hyper_parms<-select_best(
+    extract_workflow_set_result(fft_selecting_tune_results,id=id_of_best),metric='rmse')
+  hyper_parms_finalized_recipe<-recipe3 %>% finalize_recipe(hyper_parms)
+}else{
+  hyper_parms_finalized_recipe<-recipe3
+}  
+
+best_seas_vc<-configs_fft_options[[as.numeric(id_of_best)]]
+best_seas_formula<-formulae[[as.numeric(id_of_best)]]
+
+```
+
+Now we repeat that process, holding the seasonality terms fixed per the 'best' model above, and add on the search for random effects
+
+```{r searchrandom}
+
+(list_of_formulae_rands<-make_list_of_rands_formula(
+  seasonality_formula = best_seas_formula,
+  vc = best_seas_vc
+) )
+
+
+
+
+
+list_of_flows2<-lapply(list_of_formulae_rands,assemble_workflow,hyper_parms_finalized_recipe)
+names(list_of_flows2)<-as.character(1:length(list_of_formulae_rands))
+tune_all_these2<-as_workflow_set(!!!list_of_flows2)
+
+data_splits<-sliding_period(data1 |>ungroup()|> arrange(across(all_of(!!time_id_var))),!!time_id_var,period='week',
+                            lookback=90,assess_stop=4,step=12)
+
+rands_selecting_tune<-workflow_map(tune_all_these2,grid=1,resamples=data_splits)
+
+rank_results(rands_selecting_tune)
+id_of_best_rand<-rank_results(rands_selecting_tune,rank_metric="rmse",select_best=T) %>%
+  select(wflow_id) %>% slice_head(n=1) %>% unlist()
+
+best_formula<-list_of_formulae_rands[[as.numeric(id_of_best_rand)]][1]
+
+```
+
+So, finally, we have the best hyperparameters, seasonality, and random effects:
+```{r}
+hyper_parms
+
+best_formula
+```
+
+And we can fit that with the full bayesian model, using a few additional functions from the package for setup, and pre-transforing the data with the finalized recipe
+```{r}
+boundaries<-make_bound_statements(variable_controls=variables)
+
+formula_list_for_final<-create_ulam_list(prior_controls=variables, model_formula=best_formula)
+
+data_to_model<-bake(hyper_parms_finalized_recipe|>prep(),data1)
+
+
+final_fit_model<-rethinking::ulam(formula_list_for_final,
+                       constraints = boundaries,
+               chains=1,iter=100,
+               data=data_to_model,
+               sample = T,
+               #pars=c('b_week','a0','store_int',paste0('b_',final_predictors),'big_sigma','int_sigma'),
+               cmdstan = T,
+               file='ulam_fit_test_rs',
+               cores=4,
+               declare_all_data=F,
+               messages=F
+               )
+
+```
+
+With the fit done, we can make charts of residuals and decompose the historical data into the various drivers.
+
+```{r example6}
+data_to_model$pred<-predict.ulam(final_fit_model,data_to_model)[,1]
+
+```
+
+
+```{r example7}
+this_rsq<-rsq(data_to_model|>ungroup(),truth=sales,estimate=pred)['.estimate'] %>% unlist()
+this_mape<-mape(data_to_model|>ungroup(),truth=sales,estimate=pred)['.estimate'] %>% unlist()
+ggplot(data_to_model ,aes(x=sales,y=pred,color=store_id))+
+  geom_point()+ geom_abline(slope=1,intercept=0)+ggthemes::theme_tufte()+
+  ggtitle("Predicted vs Actual",subtitle=paste0('Rsq is ',round(this_rsq,2)))
+```
+
+```{r example8}
+model_preds_long<-data_to_model %>% pivot_longer(c(pred,sales))
+
+ggplot(model_preds_long,aes(x=week,y=value,color=name))+geom_line()+
+  ggtitle("Sales and Predicted Sales by Week",subtitle=paste('MAPE is',round(this_mape)))
+```
+
+```{r example9}
+decomps<-get_decomps_irregardless(data_to_model %>% ungroup(),recipe_to_use=hyper_parms_finalized_recipe,
+                         model_obj=final_fit_model,
+                         )
+```
+
+
+Roll those up to total by week and plot them:
+```{r example10}
+decomps_natl<-decomps %>% select(week,all_of(!!get_predictors_vector(hyper_parms_finalized_recipe))) %>% group_by(week) %>% summarise(across(where(is.numeric),sum))
+
+decomps_natl<-decomps_natl %>% pivot_longer(cols=c(-week))
+
+ggplot(data=decomps_natl,aes(x=week,y=value,fill=name)) + geom_area()+ggthemes::theme_tufte()+
+  ggtitle("Decomposition By Week")+
+  theme(legend.position = 'bottom')
+```
 
 
 ```{r development-inflate, eval=FALSE}

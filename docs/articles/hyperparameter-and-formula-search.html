@@ -90,24 +90,426 @@
 <div class="section level2">
 <h2 id="setting-up-a-hyper-parameter-search-by-media-channel">Setting Up a Hyper-Parameter Search by Media Channel<a class="anchor" aria-label="anchor" href="#setting-up-a-hyper-parameter-search-by-media-channel"></a>
 </h2>
-<p>A key feature of the package is the ability to set a range of adstock
-and saturation parameter values by media channel.</p>
-<p>This is handled by assigning role2 values to variables in the
-var_control tab</p>
+<p>First, let’s import all 3 tabs of a mostlytidyMMM config file.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes" class="external-link">recipes</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes" class="external-link">recipes</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tune.tidymodels.org/" class="external-link">tune</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dials.tidymodels.org" class="external-link">dials</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflowsets" class="external-link">workflowsets</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org" class="external-link">tidymodels</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/multilevelmod" class="external-link">multilevelmod</a></span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rethinking</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mostlytidyMMM</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#get the control file:</span></span>
 <span><span class="va">control_file</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'example model control.xlsx'</span>,package<span class="op">=</span><span class="st">'mostlytidyMMM'</span><span class="op">)</span></span>
 <span><span class="co">#get each relevant table of the control file:</span></span>
-<span><span class="va">var_controls</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">'variables'</span><span class="op">)</span></span>
-<span><span class="va">transform_controls</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">'role controls'</span><span class="op">)</span></span>
-<span><span class="va">workflow_controls</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">"workflow"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">desc</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">variables</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">'variables'</span><span class="op">)</span></span>
+<span><span class="va">role_controls</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">'role controls'</span><span class="op">)</span></span>
+<span><span class="va">workflow_controls</span><span class="op">&lt;-</span><span class="fu">readxl</span><span class="fu">::</span><span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html" class="external-link">read_xlsx</a></span><span class="op">(</span><span class="va">control_file</span>,<span class="st">"workflow"</span><span class="op">)</span> </span></code></pre></div>
+<p>A key feature of the package is the ability to set a range of adstock
+and saturation parameter values by media channel.</p>
+<p>This is handled by assigning role2 values to varnames in the
+‘variables’ tab. Other details about each variable are also present.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">variables</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 x 10</span></span></span>
+<span><span class="co">#&gt;    start_name       varname          role  role2 prior sign  retention asymptote</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> product          product          pred~ group    <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> place            store            pred~ group    <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> week             week             time~ time     <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> y                sales            outc~ <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> price            price            pred~ price    -<span style="color: #BB0000;">1</span> &lt;=0   <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> TV1              TV1              pred~ tv        1 &gt;=0   <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> TV2              TV2              pred~ tv        1 &gt;=0   <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> ProgVideo1       ProgVideo1       pred~ prog~     1 &gt;=0   <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> spend_TV1        spend_TV1        post~ tv       <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> spend_TV2        spend_TV2        post~ tv       <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> spend_ProgVideo1 spend_ProgVideo1 post~ prog~    <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> trend            trend            pred~ trend    <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>       </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># i 2 more variables: saturation_speed &lt;lgl&gt;, prior_sd &lt;dbl&gt;</span></span></span></code></pre></div>
+<p>The role2 assignment values should match the rows in the ‘role
+controls’ tab, which exists to define the range of retention and
+saturation parameters available to each channel/role2 value.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">role_controls</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 x 7</span></span></span>
+<span><span class="co">#&gt;   role   asymptote_low asymptote_high saturation_speed_low saturation_speed_high</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> progr~           100            900               0.000<span style="text-decoration: underline;">1</span>                 0.009</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> tv               100            900               0.000<span style="text-decoration: underline;">1</span>                 0.006</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># i 2 more variables: retention_low &lt;dbl&gt;, retention_high &lt;dbl&gt;</span></span></span></code></pre></div>
+<p>If the variables table includes fixed values of asymptote,
+saturation_speed, or retention, then the recipe step for that
+hyper-parameter for that variable will not be set to a tuneable value.
+<strong>There is a known bug:</strong> <em>If the variable table fixes
+any of the hyperparameters, the others are left to be searched over the
+default range, not the range set on the role_controls table.</em></p>
+<p>And the ‘workflow’ tab has controls for the modeled variable, if
+hyperparameter tuning will happen, and if either the seasonality
+specification or the random effects searches will run.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">workflow_controls</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 9 x 3</span></span></span>
+<span><span class="co">#&gt;   desc                                                              Value R_name</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Which variable are we modeling?                                   sales Y     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Run a hyper parameter tuning process?  If FALSE, will use saved ~ TRUE  tune_~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> saved hyper parameter tibble                                      <span style="color: #BB0000;">NA</span>    saved~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Find best seasonality spec?                                       TRUE  searc~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> seasonality interactions to test?                                 store inter~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> number of fourier terms to use for seasonality (up to 5; 2 is ro~ 1     fft_t~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> should different random effects be tested?                        TRUE  searc~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> random effects intercepts -- comma separated list of categorical~ (1|s~ list_~</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> random slopes                                                     (TV1~ list_~</span></span></code></pre></div>
+<p>To demonstrate how this works, we’ll import some data and prepare it.
+In the code block below, the add_fourier_vars(), add_groups_and_sort(),
+and rename_columns_per_controls are functions from the mostlytidyMMM
+package to use the configuration tables to prepare the data for model
+searching and final estimation.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data1</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'example2.csv'</span>,package<span class="op">=</span><span class="st">'mostlytidyMMM'</span><span class="op">)</span><span class="op">)</span><span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/rename_columns_per_controls.html">rename_columns_per_controls</a></span><span class="op">(</span>variable_controls<span class="op">=</span><span class="va">variables</span><span class="op">)</span><span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>week<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">week</span>,<span class="st">"%m/%d/%Y"</span><span class="op">)</span><span class="op">)</span><span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_fourier_vars.html">add_fourier_vars</a></span><span class="op">(</span>vc<span class="op">=</span><span class="va">variables</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="../reference/add_groups_and_sort.html">add_groups_and_sort</a></span><span class="op">(</span>vc<span class="op">=</span><span class="va">variables</span><span class="op">)</span> </span></code></pre></div>
+<p>Because mostlytidyMMM leverages the tidymodels’ packages for model
+and hyperparameter tuning, it include a function to produce a recipe (ie
+a pre-processor) from the configuration files.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">recipe3</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/create_recipe.html">create_recipe</a></span><span class="op">(</span>data_to_use<span class="op">=</span><span class="va">data1</span>,</span>
+<span>                       vc<span class="op">=</span><span class="va">variables</span>,</span>
+<span>                       mc<span class="op">=</span><span class="va">role_controls</span>,</span>
+<span>                       wc<span class="op">=</span><span class="va">workflow_controls</span><span class="op">)</span></span></code></pre></div>
+<p>In this case, with the workflow_controls table looking for
+hyperparameter tuning (ie R_name == ‘tune_this_time’ has Value==“TRUE”),
+so the created recipe uses the tune and dials packages, which can be
+seen by reading the printout or checking that it needs to be tuned with
+the provided function:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">recipe3</span></span>
+<span><span class="co">#&gt; Recipe</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Inputs:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;          role #variables</span></span>
+<span><span class="co">#&gt;         group          2</span></span>
+<span><span class="co">#&gt;       outcome          1</span></span>
+<span><span class="co">#&gt;   postprocess          3</span></span>
+<span><span class="co">#&gt;     predictor         17</span></span>
+<span><span class="co">#&gt;         price          1</span></span>
+<span><span class="co">#&gt;  programmatic          2</span></span>
+<span><span class="co">#&gt;          time         11</span></span>
+<span><span class="co">#&gt;       time_id          1</span></span>
+<span><span class="co">#&gt;         trend          1</span></span>
+<span><span class="co">#&gt;            tv          4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Operations:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Adstock Transformation with retention tune on Adstock Transformation with retention programmatic_retention onhas_role("programmatic")</span></span>
+<span><span class="co">#&gt; Saturation (asymptote= tune saturation_speed= tune Transformation on Saturation (asymptote= programmatic_asymptote saturation_speed= programmatic_saturation_speed Transformation onhas_role("programmatic")</span></span>
+<span><span class="co">#&gt; Adstock Transformation with retention tune on Adstock Transformation with retention tv_retention onhas_role("tv")</span></span>
+<span><span class="co">#&gt; Saturation (asymptote= tune saturation_speed= tune Transformation on Saturation (asymptote= tv_asymptote saturation_speed= tv_saturation_speed Transformation onhas_role("tv")</span></span>
+<span><span class="co">#&gt; Variables selected -has_role("postprocess")</span></span>
+<span><span class="co">#&gt; Novel factor level assignment for all_of(&lt;chr: "product", "store"&gt;)</span></span>
+<span><span class="co">#&gt; Variable mutation for all_of(&lt;chr: "product", "store"&gt;)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/check_if_needs_tune.html">check_if_needs_tune</a></span><span class="op">(</span><span class="va">recipe3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Because seasonality and duration of adstock are very likely influence
+each other, or at least be confoundable, mostlytidyMMM searches for
+those specifcations together (if both are enabled). This is done by
+combining the recipe with hyperparameters set to tune() and a list of
+possible model formula.</p>
+<p>Note that, for speed, model testing is done with lm or lmer() and not
+bayesian models. This may change over time.</p>
+<p>The make_list_of_fft_formulae does what it’s name says – note this is
+4 different models to test!</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fft_formulae0</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/make_list_of_fft_formulae.html">make_list_of_fft_formulae</a></span><span class="op">(</span><span class="va">workflow_controls</span>,<span class="va">recipe3</span><span class="op">)</span></span>
+<span><span class="co">#split the output into two lists, one for formula and one for workflow config tables:</span></span>
+<span><span class="co">#list must have names for workflowsets</span></span>
+<span><span class="va">formulae</span><span class="op">&lt;-</span><span class="va">fft_formulae0</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">formulae</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">formulae</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">configs_fft_options</span><span class="op">&lt;-</span><span class="va">fft_formulae0</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">formulae</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="va">formulae</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend"</span></span>
+<span><span class="va">formulae</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1"</span></span>
+<span><span class="va">formulae</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + (sin1|store) + (cos1|store)"</span></span></code></pre></div>
+<p>We create a workflow by combining the recipe and a model (which
+includes the formula). This is wrapped in the assemble_workflow
+function.</p>
+<p>A list of workflows becomes a workflowset, and workflow_map runes a
+grid search on all of them using a time-dependent data split. remember,
+this is trying 4 models and building a hyper parameter grid (on few
+values, using grid=5 here).</p>
+<p>For this example, let’s we’ll remove the most complicated and ignore
+the rank deficiency warnings. . .</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">list_of_flows</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">formulae</span>,<span class="va">assemble_workflow</span>,<span class="va">recipe3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tune_all_these</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/as_workflow_set.html" class="external-link">as_workflow_set</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">list_of_flows</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">time_id_var</span> <span class="op">=</span> <span class="va">variables</span> <span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">role</span><span class="op">==</span><span class="st">'time_id'</span><span class="op">)</span><span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">varname</span><span class="op">)</span><span class="op">|&gt;</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">data_splits</span><span class="op">&lt;-</span><span class="fu">sliding_period</span><span class="op">(</span><span class="va">data1</span> <span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span><span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="va">time_id_var</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,<span class="op">!</span><span class="op">!</span><span class="va">time_id_var</span>,period<span class="op">=</span><span class="st">'week'</span>,</span>
+<span>                            lookback<span class="op">=</span><span class="fl">52</span>,assess_stop<span class="op">=</span><span class="fl">4</span>,step<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#note that we can't say we are doing a good job detecting seasonality with 100 week training periods . . </span></span>
+<span><span class="va">fft_selecting_tune_results</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/workflow_map.html" class="external-link">workflow_map</a></span><span class="op">(</span><span class="va">tune_all_these</span>,grid<span class="op">=</span><span class="fl">5</span>,resamples<span class="op">=</span><span class="va">data_splits</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">x</span> <span style="color: #BB0000;">Slice1: internal:</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt;   </span><span style="color: #BBBB00; font-weight: bold;">Error</span><span style="color: #BB0000; font-weight: bold;"> in `stop_bad_type()`:</span></span></span>
+<span><span class="co"><span style="color: #BB0000;">#&gt;   </span><span style="color: #BBBB00;">!</span><span style="color: #BB0000;"> Result 1 must be a single string, not a character vector o...</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 1/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 2/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 3/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 4/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 5/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 1/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 2/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 3/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 4/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 5/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice1: preprocessor 1/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice1: preprocessor 2/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice1: preprocessor 3/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice1: preprocessor 4/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice1: preprocessor 5/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 1/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 2/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 3/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 4/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice2: preprocessor 5/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 1/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 2/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 3/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 4/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> <span style="color: #BBBB00;">Slice4: preprocessor 5/5, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading</span></span></span></code></pre></div>
+<p>The workflowsets package has a nice autoplot function, but for now
+we’ll take ‘the best’.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">fft_selecting_tune_results</span>,metric<span class="op">=</span><span class="st">'rmse'</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hyperparameter-and-formula-search_files/figure-html/autoplot-1.png" width="700"></p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">id_of_best</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/rank_results.html" class="external-link">rank_results</a></span><span class="op">(</span><span class="va">fft_selecting_tune_results</span>,rank_metric<span class="op">=</span><span class="st">"rmse"</span>,select_best<span class="op">=</span><span class="cn">F</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">wflow_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="../reference/check_if_needs_tune.html">check_if_needs_tune</a></span><span class="op">(</span><span class="va">recipe3</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">hyper_parms</span><span class="op">&lt;-</span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html" class="external-link">select_best</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://workflowsets.tidymodels.org/reference/extract_workflow_set_result.html" class="external-link">extract_workflow_set_result</a></span><span class="op">(</span><span class="va">fft_selecting_tune_results</span>,id<span class="op">=</span><span class="va">id_of_best</span><span class="op">)</span>,metric<span class="op">=</span><span class="st">'rmse'</span><span class="op">)</span></span>
+<span>  <span class="va">hyper_parms_finalized_recipe</span><span class="op">&lt;-</span><span class="va">recipe3</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://tune.tidymodels.org/reference/finalize_model.html" class="external-link">finalize_recipe</a></span><span class="op">(</span><span class="va">hyper_parms</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="kw">else</span><span class="op">{</span></span>
+<span>  <span class="va">hyper_parms_finalized_recipe</span><span class="op">&lt;-</span><span class="va">recipe3</span></span>
+<span><span class="op">}</span>  </span>
+<span></span>
+<span><span class="va">best_seas_vc</span><span class="op">&lt;-</span><span class="va">configs_fft_options</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">id_of_best</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">best_seas_formula</span><span class="op">&lt;-</span><span class="va">formulae</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">id_of_best</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<p>Now we repeat that process, holding the seasonality terms fixed per
+the ‘best’ model above, and add on the search for random effects</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="op">(</span><span class="va">list_of_formulae_rands</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/make_list_of_rands_formula.html">make_list_of_rands_formula</a></span><span class="op">(</span></span>
+<span>  seasonality_formula <span class="op">=</span> <span class="va">best_seas_formula</span>,</span>
+<span>  vc <span class="op">=</span> <span class="va">best_seas_vc</span></span>
+<span><span class="op">)</span> <span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1+(1|store)"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1+(TV1|store)"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1+(1|store) + (TV1|store)"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[4]]</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1"</span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span><span class="va">list_of_flows2</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">list_of_formulae_rands</span>,<span class="va">assemble_workflow</span>,<span class="va">hyper_parms_finalized_recipe</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">list_of_flows2</span><span class="op">)</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">list_of_formulae_rands</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">tune_all_these2</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/as_workflow_set.html" class="external-link">as_workflow_set</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">list_of_flows2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">data_splits</span><span class="op">&lt;-</span><span class="fu">sliding_period</span><span class="op">(</span><span class="va">data1</span> <span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span><span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="va">time_id_var</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,<span class="op">!</span><span class="op">!</span><span class="va">time_id_var</span>,period<span class="op">=</span><span class="st">'week'</span>,</span>
+<span>                            lookback<span class="op">=</span><span class="fl">90</span>,assess_stop<span class="op">=</span><span class="fl">4</span>,step<span class="op">=</span><span class="fl">12</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rands_selecting_tune</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/workflow_map.html" class="external-link">workflow_map</a></span><span class="op">(</span><span class="va">tune_all_these2</span>,grid<span class="op">=</span><span class="fl">1</span>,resamples<span class="op">=</span><span class="va">data_splits</span><span class="op">)</span></span>
+<span><span class="co">#&gt; boundary (singular) fit: see help('isSingular')</span></span>
+<span><span class="co">#&gt; boundary (singular) fit: see help('isSingular')</span></span>
+<span><span class="co">#&gt; boundary (singular) fit: see help('isSingular')</span></span>
+<span></span>
+<span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/rank_results.html" class="external-link">rank_results</a></span><span class="op">(</span><span class="va">rands_selecting_tune</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 x 9</span></span></span>
+<span><span class="co">#&gt;   wflow_id .config         .metric   mean std_err     n preprocessor model  rank</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 4        Preprocessor1_~ rmse    14.2        <span style="color: #BB0000;">NA</span>     1 recipe       line~     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 4        Preprocessor1_~ rsq      0.945      <span style="color: #BB0000;">NA</span>     1 recipe       line~     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1        Preprocessor1_~ rmse    14.2        <span style="color: #BB0000;">NA</span>     1 recipe       line~     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1        Preprocessor1_~ rsq      0.945      <span style="color: #BB0000;">NA</span>     1 recipe       line~     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 2        Preprocessor1_~ rmse    14.2        <span style="color: #BB0000;">NA</span>     1 recipe       line~     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2        Preprocessor1_~ rsq      0.945      <span style="color: #BB0000;">NA</span>     1 recipe       line~     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 3        Preprocessor1_~ rmse    14.2        <span style="color: #BB0000;">NA</span>     1 recipe       line~     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> 3        Preprocessor1_~ rsq      0.945      <span style="color: #BB0000;">NA</span>     1 recipe       line~     4</span></span>
+<span><span class="va">id_of_best_rand</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/rank_results.html" class="external-link">rank_results</a></span><span class="op">(</span><span class="va">rands_selecting_tune</span>,rank_metric<span class="op">=</span><span class="st">"rmse"</span>,select_best<span class="op">=</span><span class="cn">T</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">wflow_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">best_formula</span><span class="op">&lt;-</span><span class="va">list_of_formulae_rands</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">id_of_best_rand</span><span class="op">)</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></code></pre></div>
+<p>So, finally, we have the best hyperparameters, seasonality, and
+random effects:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hyper_parms</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 x 7</span></span></span>
+<span><span class="co">#&gt;   programmatic_retention programmatic_asymptote programmatic_saturation_speed</span></span>
+<span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                  0.471                   161.                       0.007<span style="text-decoration: underline;">46</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># i 4 more variables: tv_retention &lt;dbl&gt;, tv_asymptote &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   tv_saturation_speed &lt;dbl&gt;, .config &lt;chr&gt;</span></span></span>
+<span></span>
+<span><span class="va">best_formula</span></span>
+<span><span class="co">#&gt; [1] "sales ~ price + TV1 + TV2 + ProgVideo1 + trend + sin1 + cos1"</span></span></code></pre></div>
+<p>And we can fit that with the full bayesian model, using a few
+additional functions from the package for setup, and pre-transforing the
+data with the finalized recipe</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">boundaries</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/make_bound_statements.html">make_bound_statements</a></span><span class="op">(</span>variable_controls<span class="op">=</span><span class="va">variables</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">formula_list_for_final</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/create_ulam_list.html">create_ulam_list</a></span><span class="op">(</span>prior_controls<span class="op">=</span><span class="va">variables</span>, model_formula<span class="op">=</span><span class="va">best_formula</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">data_to_model</span><span class="op">&lt;-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">hyper_parms_finalized_recipe</span><span class="op">|&gt;</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">data1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: There were 2 warnings in `summarise()`.</span></span>
+<span><span class="co">#&gt; The first warning was:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `product = mousetrap`, `store = North`.</span></span>
+<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
+<span><span class="co">#&gt; There were 2 warnings in `summarise()`.</span></span>
+<span><span class="co">#&gt; The first warning was:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `product = mousetrap`, `store = North`.</span></span>
+<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
+<span></span>
+<span></span>
+<span><span class="va">final_fit_model</span><span class="op">&lt;-</span><span class="fu">rethinking</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rethinking/man/ulam.html" class="external-link">ulam</a></span><span class="op">(</span><span class="va">formula_list_for_final</span>,</span>
+<span>                       constraints <span class="op">=</span> <span class="va">boundaries</span>,</span>
+<span>               chains<span class="op">=</span><span class="fl">1</span>,iter<span class="op">=</span><span class="fl">100</span>,</span>
+<span>               data<span class="op">=</span><span class="va">data_to_model</span>,</span>
+<span>               sample <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>               <span class="co">#pars=c('b_week','a0','store_int',paste0('b_',final_predictors),'big_sigma','int_sigma'),</span></span>
+<span>               cmdstan <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>               file<span class="op">=</span><span class="st">'ulam_fit_test_rs'</span>,</span>
+<span>               cores<span class="op">=</span><span class="fl">4</span>,</span>
+<span>               declare_all_data<span class="op">=</span><span class="cn">F</span>,</span>
+<span>               messages<span class="op">=</span><span class="cn">F</span></span>
+<span>               <span class="op">)</span></span>
+<span><span class="co">#&gt; Running MCMC with 1 chain, with 1 thread(s) per chain...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 WARNING: There aren't enough warmup iterations to fit the </span></span>
+<span><span class="co">#&gt; Chain 1          three stages of adaptation as currently configured. </span></span>
+<span><span class="co">#&gt; Chain 1          Reducing each adaptation stage to 15%/75%/10% of </span></span>
+<span><span class="co">#&gt; Chain 1          the given number of warmup iterations: </span></span>
+<span><span class="co">#&gt; Chain 1            init_buffer = 7 </span></span>
+<span><span class="co">#&gt; Chain 1            adapt_window = 38 </span></span>
+<span><span class="co">#&gt; Chain 1            term_buffer = 5 </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  1 / 100 [  1%]  (Warmup)</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpUPpabO/model-75a86e572de3.stan', line 44, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 51 / 100 [ 51%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 100 / 100 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 finished in 4.3 seconds.</span></span>
+<span><span class="co">#&gt; Warning: 33 of 50 (66.0%) transitions hit the maximum treedepth limit of 10.</span></span>
+<span><span class="co">#&gt; See https://mc-stan.org/misc/warnings for details.</span></span></code></pre></div>
+<p>With the fit done, we can make charts of residuals and decompose the
+historical data into the various drivers.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data_to_model</span><span class="op">$</span><span class="va">pred</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/predict.ulam.html">predict.ulam</a></span><span class="op">(</span><span class="va">final_fit_model</span>,<span class="va">data_to_model</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">this_rsq</span><span class="op">&lt;-</span><span class="fu">rsq</span><span class="op">(</span><span class="va">data_to_model</span><span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span>,truth<span class="op">=</span><span class="va">sales</span>,estimate<span class="op">=</span><span class="va">pred</span><span class="op">)</span><span class="op">[</span><span class="st">'.estimate'</span><span class="op">]</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">this_mape</span><span class="op">&lt;-</span><span class="fu">mape</span><span class="op">(</span><span class="va">data_to_model</span><span class="op">|&gt;</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span>,truth<span class="op">=</span><span class="va">sales</span>,estimate<span class="op">=</span><span class="va">pred</span><span class="op">)</span><span class="op">[</span><span class="st">'.estimate'</span><span class="op">]</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">data_to_model</span> ,<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">sales</span>,y<span class="op">=</span><span class="va">pred</span>,color<span class="op">=</span><span class="va">store_id</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_abline</a></span><span class="op">(</span>slope<span class="op">=</span><span class="fl">1</span>,intercept<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="op">+</span><span class="fu">ggthemes</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemes/man/theme_tufte.html" class="external-link">theme_tufte</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Predicted vs Actual"</span>,subtitle<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'Rsq is '</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">this_rsq</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hyperparameter-and-formula-search_files/figure-html/example7-1.png" width="700"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model_preds_long</span><span class="op">&lt;-</span><span class="va">data_to_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pred</span>,<span class="va">sales</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">model_preds_long</span>,<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">week</span>,y<span class="op">=</span><span class="va">value</span>,color<span class="op">=</span><span class="va">name</span><span class="op">)</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Sales and Predicted Sales by Week"</span>,subtitle<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'MAPE is'</span>,<span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">this_mape</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hyperparameter-and-formula-search_files/figure-html/example8-1.png" width="700"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">decomps</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/get_decomps_irregardless.html">get_decomps_irregardless</a></span><span class="op">(</span><span class="va">data_to_model</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span>,recipe_to_use<span class="op">=</span><span class="va">hyper_parms_finalized_recipe</span>,</span>
+<span>                         model_obj<span class="op">=</span><span class="va">final_fit_model</span>,</span>
+<span>                         <span class="op">)</span></span></code></pre></div>
+<p>Roll those up to total by week and plot them:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">decomps_natl</span><span class="op">&lt;-</span><span class="va">decomps</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">week</span>,<span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="fu"><a href="../reference/get_predictors_vector.html">get_predictors_vector</a></span><span class="op">(</span><span class="va">hyper_parms_finalized_recipe</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">week</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>,<span class="va">sum</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">decomps_natl</span><span class="op">&lt;-</span><span class="va">decomps_natl</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>cols<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="va">week</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">decomps_natl</span>,<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">week</span>,y<span class="op">=</span><span class="va">value</span>,fill<span class="op">=</span><span class="va">name</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_area</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span><span class="fu">ggthemes</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggthemes/man/theme_tufte.html" class="external-link">theme_tufte</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Decomposition By Week"</span><span class="op">)</span><span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">'bottom'</span><span class="op">)</span></span></code></pre></div>
+<p><img src="hyperparameter-and-formula-search_files/figure-html/example10-1.png" width="700"></p>
 </div>
   </div>
 

@@ -456,8 +456,8 @@ make_list_of_rands_formula<-function(seasonality_formula=best_seas_formula,
   else{
     list_of_formulae_rands<-vector('list')
     #get all possible terms
-    terms_to_add<-paste(get_control("list_rand_ints",best_vc),
-                        get_control('list_rand_slopes',best_vc),sep=',') %>% strsplit(split=',') %>% unlist()
+    terms_to_add<-paste(get_control("list_rand_ints",vc),
+                        get_control('list_rand_slopes',vc),sep=',') %>% strsplit(split=',') %>% unlist()
     #create all_combinations using collapsed combn output
     pastey<-function(x){paste(unlist(x),collapse=" + ")}
     all_combinations<-unlist(lapply(1:length(terms_to_add),function(x) combn(terms_to_add,x,FUN=pastey,simplify = F)))
@@ -532,7 +532,7 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
     }
   }
   formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
-  return(list(formulae=formulae,configs=list_of_configs))
+  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
 }
 
 

@@ -18,11 +18,15 @@ Imports:
     tune,
     workflows
 Suggests: 
+    ggthemes,
     knitr,
+    multilevelmod,
     readxl,
     rmarkdown,
     testthat,
-    tidyverse
+    tidymodels,
+    tidyverse,
+    workflowsets
 VignetteBuilder: 
     knitr
 Remotes: 

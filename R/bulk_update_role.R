@@ -289,7 +289,7 @@ create_recipe<-function(data_to_use=data1,vc=var_controls,mc=transform_controls,
   
   recipe0<-recipe(head(data_to_use,n=1) ) 
   
-  recipe1<-recipe0 |> bulk_update_role() |> bulk_add_role() 
+  recipe1<-recipe0 |> bulk_update_role(vars_to_append_roles=vc$varname,roles_to_be_appended=vc$role) |> bulk_add_role(vars_to_append_roles=vc$varname[!is.na(vc$role2)],roles_to_be_appended=vc$role2[!is.na(vc$role2)]) 
   
   recipe2<-recipe1 |> add_steps_media(var_specific_controls=vc,media_controls=mc) |>  step_select(-has_role('postprocess'))
   
