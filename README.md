@@ -3,8 +3,9 @@
 
 # mostlytidyMMM
 
-<span style="color: red;"> **This is a pre-alpha release package! Assume
-none of it works correctly!** </span>
+<span style="color: red;"> **This is a pre-alpha release package
+currently used as the Author’s playground! ** **Assume none of it works
+correctly!!** </span>
 
 <!-- badges: start -->
 
@@ -38,8 +39,8 @@ formula to rethinking::ulam() input, and a custom decomposition formula.
 
 Unlike either of those packages, mostlytidyMMM allows for complete
 control on the part of the analyst to choose the level of data
-granularity and model form (*welp*, currently only allows normal
-regression, but it is a hierarchical bayesian regression and the
+granularity and model form (*welp, currently only allows normal
+regression*, but it is a hierarchical bayesian regression and the
 specification of that is entirely up to the analyst).
 
 In general, mostlytidyMMM allows an analyst with a table ready for MMM
@@ -163,7 +164,7 @@ statements:
                  grand_intercept_prior='normal(45,25)') )
 #> [[1]]
 #> sales ~ normal(big_model, big_sigma)
-#> <environment: 0x000000002d2bfcd8>
+#> <environment: 0x000000002eb6bcf8>
 #> 
 #> [[2]]
 #> big_model <- big_model_1 + a0 + store_int[store_id] + b_TV1_interact_store[store_id]
@@ -175,55 +176,55 @@ statements:
 #> 
 #> $b_TV1_interact_store
 #> b_TV1_interact_store[store_id] ~ normal(0, slope_sigma)
-#> <environment: 0x000000002d803440>
+#> <environment: 0x000000002f024130>
 #> 
 #> $store
 #> store_int[store_id] ~ normal(65, int_sigma)
-#> <environment: 0x000000002d7f2f68>
+#> <environment: 0x000000002f01b2b0>
 #> 
 #> $b_trend
 #> b_trend ~ normal(0, 10)
-#> <environment: 0x000000002d807d70>
+#> <environment: 0x000000002f02a2b8>
 #> 
 #> $b_sin1
 #> b_sin1 ~ normal(0, 10)
-#> <environment: 0x000000002d807d70>
+#> <environment: 0x000000002f02a2b8>
 #> 
 #> $b_cos1
 #> b_cos1 ~ normal(0, 10)
-#> <environment: 0x000000002d807d70>
+#> <environment: 0x000000002f02a2b8>
 #> 
 #> $b_price
 #> b_price ~ normal(-20, 10)
-#> <environment: 0x000000002d670630>
+#> <environment: 0x000000002ef6fd58>
 #> 
 #> $b_TV1
 #> b_TV1 ~ normal(6, 10)
-#> <environment: 0x000000002d67b788>
+#> <environment: 0x000000002ef78f20>
 #> 
 #> $b_TV2
 #> b_TV2 ~ normal(6, 10)
-#> <environment: 0x000000002d6812e8>
+#> <environment: 0x000000002ef7a938>
 #> 
 #> $b_ProgVideo1
 #> b_ProgVideo1 ~ normal(2, 10)
-#> <environment: 0x000000002d682ef8>
+#> <environment: 0x000000002ef82d28>
 #> 
 #> [[13]]
 #> a0 ~ normal(45, 25)
-#> <environment: 0x000000002d2bfcd8>
+#> <environment: 0x000000002eb6bcf8>
 #> 
 #> [[14]]
 #> big_sigma ~ half_cauchy(0, 100)
-#> <environment: 0x000000002d2bfcd8>
+#> <environment: 0x000000002eb6bcf8>
 #> 
 #> [[15]]
 #> int_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d2bfcd8>
+#> <environment: 0x000000002eb6bcf8>
 #> 
 #> [[16]]
 #> slope_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d2bfcd8>
+#> <environment: 0x000000002eb6bcf8>
 
 
 (bounds_for_ulam<-make_bound_statements(variable_controls=var_controls))
@@ -246,7 +247,7 @@ intercepts). **NB:**In actual use, much higher iteration numbers are
 preferred.
 
 ``` r
-model_data<-no_tuning_recipe %>% prep() %>% bake(data1)
+model_data<-no_tuning_recipe %>% prep(data1) %>% bake(data1)
 
 fitted_model_obj<-ulam(expressions_for_ulam, 
                      model_data,
@@ -254,10 +255,80 @@ fitted_model_obj<-ulam(expressions_for_ulam,
                      chains=2,
                      iter=100,
                      cores=2,
-                     file='no_tuning_mod',#have a care to remove this if you want to resample!
+                     #file='no_tuning_mod',#have a care to remove this if you want to resample!
                      declare_all_data=F,
                      messages=F
                    )
+#> Running MCMC with 2 parallel chains, with 1 thread(s) per chain...
+#> 
+#> Chain 1 WARNING: There aren't enough warmup iterations to fit the 
+#> Chain 1          three stages of adaptation as currently configured. 
+#> Chain 1          Reducing each adaptation stage to 15%/75%/10% of 
+#> Chain 1          the given number of warmup iterations: 
+#> Chain 1            init_buffer = 7 
+#> Chain 1            adapt_window = 38 
+#> Chain 1            term_buffer = 5 
+#> Chain 1 Iteration:  1 / 100 [  1%]  (Warmup)
+#> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 1
+#> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 1
+#> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 1
+#> Chain 2 WARNING: There aren't enough warmup iterations to fit the 
+#> Chain 2          three stages of adaptation as currently configured. 
+#> Chain 2          Reducing each adaptation stage to 15%/75%/10% of 
+#> Chain 2          the given number of warmup iterations: 
+#> Chain 2            init_buffer = 7 
+#> Chain 2            adapt_window = 38 
+#> Chain 2            term_buffer = 5 
+#> Chain 2 Iteration:  1 / 100 [  1%]  (Warmup)
+#> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 2
+#> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 2
+#> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 2
+#> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 2
+#> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+#> Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)
+#> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+#> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+#> Chain 2
+#> Chain 1 Iteration: 51 / 100 [ 51%]  (Sampling) 
+#> Chain 2 Iteration: 51 / 100 [ 51%]  (Sampling) 
+#> Chain 2 Iteration: 100 / 100 [100%]  (Sampling) 
+#> Chain 1 Iteration: 100 / 100 [100%]  (Sampling) 
+#> Chain 2 finished in 6.8 seconds.
+#> Chain 1 finished in 6.9 seconds.
+#> 
+#> Both chains finished successfully.
+#> Mean chain execution time: 6.9 seconds.
+#> Total execution time: 7.1 seconds.
+#> Warning: 87 of 100 (87.0%) transitions hit the maximum treedepth limit of 10.
+#> See https://mc-stan.org/misc/warnings for details.
 ```
 
 a predict method for ulam objects is included in the mostlytidyMMM

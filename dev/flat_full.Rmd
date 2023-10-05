@@ -933,14 +933,14 @@ check_if_needs_tune<-function(recipe_to_check){
 #' 
 #' @importFrom tune finalize_recipe
 #' @importFrom recipes recipe
-create_recipe<-function(data_to_use=data1,vc=var_controls,mc=transform_controls,
+create_recipe<-function(data_to_use=data1 ,vc=var_controls,mc=transform_controls,
                         wc=workflow_controls){
   #start recipe by assigning roles
   #  small data is good, going to need to loop over recipe repeatedly, lots of internal copying
   
   groupings<-as.character(groups(data_to_use))
   
-  recipe0<-recipe(head(data_to_use,n=1) ) 
+  recipe0<-recipe(head(data_to_use,n=100) ) 
   
   recipe1<-recipe0 |> bulk_update_role(vars_to_append_roles=vc$varname,roles_to_be_appended=vc$role) |> bulk_add_role(vars_to_append_roles=vc$varname[!is.na(vc$role2)],roles_to_be_appended=vc$role2[!is.na(vc$role2)]) 
   

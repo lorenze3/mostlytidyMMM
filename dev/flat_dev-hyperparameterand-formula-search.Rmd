@@ -208,7 +208,7 @@ final_fit_model<-rethinking::ulam(formula_list_for_final,
                sample = T,
                #pars=c('b_week','a0','store_int',paste0('b_',final_predictors),'big_sigma','int_sigma'),
                cmdstan = T,
-               file='final_fit_model.RDS',
+               file='final_fit_model',
                cores=4,
                declare_all_data=F,
                messages=F

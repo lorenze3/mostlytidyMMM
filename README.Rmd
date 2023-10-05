@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
 
 # mostlytidyMMM
 <span style="color: red;">
-**This is a pre-alpha release package!  Assume none of it works correctly!**
+**This is a pre-alpha release package currently used as the Author's playground! ** 
+**Assume none of it works correctly!!**
 </span>
 
 <!-- badges: start -->
@@ -31,7 +32,7 @@ Similar to Meta's [Robyn](https://facebookexperimental.github.io/Robyn/) and Goo
 
 [tidymodels](https://github.com/tidymodels/tidymodels) provides the hyperparameter tuning and McElreath's [rethinking](https://github.com/rmcelreath/rethinking) builds a link to Stan..  To take those two foundations and build an MMM package, mostlytidyMMM has recipe steps for adstock and saturation, functions to build workflowsets out of multiple formulas, a translator from a string formula to rethinking::ulam() input, and a custom decomposition formula.
 
-Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst to choose the level of data granularity and model form (*welp*, currently only allows normal regression, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).
+Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst to choose the level of data granularity and model form (*welp, currently only allows normal regression*, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).
 
 In general, mostlytidyMMM allows an analyst with a table ready for MMM to specify a reasonable set of models and priors in an .xlsx configuration file and quickly hone in on a 'final' model specification.
 
@@ -111,7 +112,7 @@ create a rethinking::ulam appropriate flist from the formula and the config tabl
 Bake data (ie, apply the transformations) and call rethinking::ulam to fit the bayesian regression (in this case with random slopes and intercepts).  **NB:**In actual use, much higher iteration numbers are preferred.
 
 ```{r example 5}
-model_data<-no_tuning_recipe %>% prep() %>% bake(data1)
+model_data<-no_tuning_recipe %>% prep(data1) %>% bake(data1)
 
 fitted_model_obj<-ulam(expressions_for_ulam, 
                      model_data,
@@ -119,7 +120,7 @@ fitted_model_obj<-ulam(expressions_for_ulam,
                      chains=2,
                      iter=100,
                      cores=2,
-                     file='no_tuning_mod',#have a care to remove this if you want to resample!
+                     #file='no_tuning_mod',#have a care to remove this if you want to resample!
                      declare_all_data=F,
                      messages=F
                    )

@@ -341,14 +341,14 @@ the ‘best’ model above, and add on the search for random effects</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 x 9</span></span></span>
 <span><span class="co">#&gt;   wflow_id .config          .metric  mean std_err     n preprocessor model  rank</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3        Preprocessor1_M~ rmse    6.38    3.53      2 recipe       line~     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3        Preprocessor1_M~ rmse    7.33    1.79      2 recipe       line~     1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 3        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1        Preprocessor1_M~ rmse    6.38    3.53      2 recipe       line~     2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 4        Preprocessor1_M~ rmse    6.38    3.53      2 recipe       line~     3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 4        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 2        Preprocessor1_M~ rmse    6.38    3.53      2 recipe       line~     4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> 2        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2        Preprocessor1_M~ rmse    7.33    1.79      2 recipe       line~     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 2        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1        Preprocessor1_M~ rmse    7.33    1.79      2 recipe       line~     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> 4        Preprocessor1_M~ rmse    7.33    1.79      2 recipe       line~     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> 4        Preprocessor1_M~ rsq     0.738   0.138     2 recipe       line~     4</span></span>
 <span><span class="va">id_of_best_rand</span><span class="op">&lt;-</span><span class="fu"><a href="https://workflowsets.tidymodels.org/reference/rank_results.html" class="external-link">rank_results</a></span><span class="op">(</span><span class="va">rands_selecting_tune</span>,rank_metric<span class="op">=</span><span class="st">"rmse"</span>,select_best<span class="op">=</span><span class="cn">T</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">wflow_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -360,7 +360,7 @@ random effects:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 x 7</span></span></span>
 <span><span class="co">#&gt;   programmatic_retention programmatic_asymptote programmatic_saturation_speed</span></span>
 <span><span class="co">#&gt;                    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                  0.645                   219.                       0.003<span style="text-decoration: underline;">86</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                  0.233                   128.                       0.001<span style="text-decoration: underline;">40</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># i 4 more variables: tv_retention &lt;dbl&gt;, tv_asymptote &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   tv_saturation_speed &lt;dbl&gt;, .config &lt;chr&gt;</span></span></span>
 <span></span>
@@ -375,20 +375,6 @@ data with the finalized recipe</p>
 <span><span class="va">formula_list_for_final</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/create_ulam_list.html">create_ulam_list</a></span><span class="op">(</span>prior_controls<span class="op">=</span><span class="va">variables</span>, model_formula<span class="op">=</span><span class="va">best_formula</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">data_to_model</span><span class="op">&lt;-</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">hyper_parms_finalized_recipe</span><span class="op">|&gt;</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span><span class="op">)</span>,<span class="va">data1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: There were 2 warnings in `summarise()`.</span></span>
-<span><span class="co">#&gt; The first warning was:</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `product = mousetrap`, `store = North`.</span></span>
-<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
-<span><span class="co">#&gt; There were 2 warnings in `summarise()`.</span></span>
-<span><span class="co">#&gt; The first warning was:</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In argument: `min = min(delta, na.rm = T)`.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> In group 1: `product = mousetrap`, `store = North`.</span></span>
-<span><span class="co">#&gt; Caused by warning in `min()`:</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> no non-missing arguments to min; returning Inf</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">i</span> Run `dplyr::last_dplyr_warnings()` to see the 1 remaining warning.</span></span>
 <span></span>
 <span></span>
 <span><span class="va">final_fit_model</span><span class="op">&lt;-</span><span class="fu">rethinking</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rethinking/man/ulam.html" class="external-link">ulam</a></span><span class="op">(</span><span class="va">formula_list_for_final</span>,</span>
@@ -398,7 +384,7 @@ data with the finalized recipe</p>
 <span>               sample <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>               <span class="co">#pars=c('b_week','a0','store_int',paste0('b_',final_predictors),'big_sigma','int_sigma'),</span></span>
 <span>               cmdstan <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>               file<span class="op">=</span><span class="st">'final_fit_model.RDS'</span>,</span>
+<span>               file<span class="op">=</span><span class="st">'final_fit_model'</span>,</span>
 <span>               cores<span class="op">=</span><span class="fl">4</span>,</span>
 <span>               declare_all_data<span class="op">=</span><span class="cn">F</span>,</span>
 <span>               messages<span class="op">=</span><span class="cn">F</span></span>
@@ -414,44 +400,49 @@ data with the finalized recipe</p>
 <span><span class="co">#&gt; Chain 1            term_buffer = 5 </span></span>
 <span><span class="co">#&gt; Chain 1 Iteration:  1 / 100 [  1%]  (Warmup)</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is -inf, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
-<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpILJNuv/model-6e8c591d6e4e.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpoltTAU/model-343c5f69764b.stan', line 43, column 4 to column 44)</span></span>
 <span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
 <span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
 <span><span class="co">#&gt; Chain 1</span></span>
 <span><span class="co">#&gt; Chain 1 Iteration: 51 / 100 [ 51%]  (Sampling) </span></span>
 <span><span class="co">#&gt; Chain 1 Iteration: 100 / 100 [100%]  (Sampling) </span></span>
-<span><span class="co">#&gt; Chain 1 finished in 3.5 seconds.</span></span>
-<span><span class="co">#&gt; Warning: 34 of 50 (68.0%) transitions hit the maximum treedepth limit of 10.</span></span>
+<span><span class="co">#&gt; Chain 1 finished in 3.7 seconds.</span></span>
+<span><span class="co">#&gt; Warning: 39 of 50 (78.0%) transitions hit the maximum treedepth limit of 10.</span></span>
 <span><span class="co">#&gt; See https://mc-stan.org/misc/warnings for details.</span></span></code></pre></div>
 <p>With the fit done, we can make charts of residuals and decompose the
 historical data into the various drivers.</p>

@@ -77,7 +77,7 @@
 <div class="section level1">
 <div class="page-header"><h1 id="mostlytidymmm">mostlytidyMMM<a class="anchor" aria-label="anchor" href="#mostlytidymmm"></a>
 </h1></div>
-<p><span style="color: red;"> <strong>This is a pre-alpha release package! Assume none of it works correctly!</strong> </span></p>
+<p><span style="color: red;"> <strong>This is a pre-alpha release package currently used as the Author’s playground! </strong> <strong>Assume none of it works correctly!!</strong> </span></p>
 <!-- badges: start -->
 
 <div class="section level2">
@@ -86,7 +86,7 @@
 <p>mostlytidyMMM is a toolkit for building a marketing mix model.</p>
 <p>Similar to Meta’s <a href="https://facebookexperimental.github.io/Robyn/" class="external-link">Robyn</a> and Google’s <a href="https://github.com/google/lightweight_mmm" class="external-link">lightweightMMM</a> in that it offers basic MMM capability without an analyst needing to choose write their own functions. In terms of philosophy of MMM, this package is somewhere between Robyn and lightweightMMM – it uses pre-modelling transformations for time delayed effects (i.e. adstocking) and saturation transformations like Robyn, but the final coefficients are estimated via MCMC in Stan to take advantage of constrained, prior informed regression models.</p>
 <p><a href="https://github.com/tidymodels/tidymodels" class="external-link">tidymodels</a> provides the hyperparameter tuning and McElreath’s <a href="https://github.com/rmcelreath/rethinking" class="external-link">rethinking</a> builds a link to Stan.. To take those two foundations and build an MMM package, mostlytidyMMM has recipe steps for adstock and saturation, functions to build workflowsets out of multiple formulas, a translator from a string formula to rethinking::ulam() input, and a custom decomposition formula.</p>
-<p>Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst to choose the level of data granularity and model form (<em>welp</em>, currently only allows normal regression, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).</p>
+<p>Unlike either of those packages, mostlytidyMMM allows for complete control on the part of the analyst to choose the level of data granularity and model form (<em>welp, currently only allows normal regression</em>, but it is a hierarchical bayesian regression and the specification of that is entirely up to the analyst).</p>
 <p>In general, mostlytidyMMM allows an analyst with a table ready for MMM to specify a reasonable set of models and priors in an .xlsx configuration file and quickly hone in on a ‘final’ model specification.</p>
 </div>
 <div class="section level2">
@@ -189,7 +189,7 @@
 <span>                 grand_intercept_prior<span class="op">=</span><span class="st">'normal(45,25)'</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; sales ~ normal(big_model, big_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d2bfcd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002eb6bcf8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
 <span><span class="co">#&gt; big_model &lt;- big_model_1 + a0 + store_int[store_id] + b_TV1_interact_store[store_id]</span></span>
@@ -201,55 +201,55 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV1_interact_store</span></span>
 <span><span class="co">#&gt; b_TV1_interact_store[store_id] ~ normal(0, slope_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d803440&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002f024130&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $store</span></span>
 <span><span class="co">#&gt; store_int[store_id] ~ normal(65, int_sigma)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d7f2f68&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002f01b2b0&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_trend</span></span>
 <span><span class="co">#&gt; b_trend ~ normal(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d807d70&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002f02a2b8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_sin1</span></span>
 <span><span class="co">#&gt; b_sin1 ~ normal(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d807d70&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002f02a2b8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_cos1</span></span>
 <span><span class="co">#&gt; b_cos1 ~ normal(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d807d70&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002f02a2b8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_price</span></span>
 <span><span class="co">#&gt; b_price ~ normal(-20, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d670630&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002ef6fd58&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV1</span></span>
 <span><span class="co">#&gt; b_TV1 ~ normal(6, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d67b788&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002ef78f20&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_TV2</span></span>
 <span><span class="co">#&gt; b_TV2 ~ normal(6, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d6812e8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002ef7a938&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $b_ProgVideo1</span></span>
 <span><span class="co">#&gt; b_ProgVideo1 ~ normal(2, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d682ef8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002ef82d28&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[13]]</span></span>
 <span><span class="co">#&gt; a0 ~ normal(45, 25)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d2bfcd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002eb6bcf8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[14]]</span></span>
 <span><span class="co">#&gt; big_sigma ~ half_cauchy(0, 100)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d2bfcd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002eb6bcf8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[15]]</span></span>
 <span><span class="co">#&gt; int_sigma ~ half_cauchy(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d2bfcd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002eb6bcf8&gt;</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[16]]</span></span>
 <span><span class="co">#&gt; slope_sigma ~ half_cauchy(0, 10)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x000000002d2bfcd8&gt;</span></span>
+<span><span class="co">#&gt; &lt;environment: 0x000000002eb6bcf8&gt;</span></span>
 <span></span>
 <span></span>
 <span><span class="op">(</span><span class="va">bounds_for_ulam</span><span class="op">&lt;-</span><span class="fu"><a href="reference/make_bound_statements.html">make_bound_statements</a></span><span class="op">(</span>variable_controls<span class="op">=</span><span class="va">var_controls</span><span class="op">)</span><span class="op">)</span></span>
@@ -266,7 +266,7 @@
 <span><span class="co">#&gt; [1] "lower=0"</span></span></code></pre></div>
 <p>Bake data (ie, apply the transformations) and call rethinking::ulam to fit the bayesian regression (in this case with random slopes and intercepts). <strong>NB:</strong>In actual use, much higher iteration numbers are preferred.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model_data</span><span class="op">&lt;-</span><span class="va">no_tuning_recipe</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">prep</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">bake</span><span class="op">(</span><span class="va">data1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">model_data</span><span class="op">&lt;-</span><span class="va">no_tuning_recipe</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">prep</span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">bake</span><span class="op">(</span><span class="va">data1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fitted_model_obj</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/pkg/rethinking/man/ulam.html" class="external-link">ulam</a></span><span class="op">(</span><span class="va">expressions_for_ulam</span>, </span>
 <span>                     <span class="va">model_data</span>,</span>
@@ -274,10 +274,80 @@
 <span>                     chains<span class="op">=</span><span class="fl">2</span>,</span>
 <span>                     iter<span class="op">=</span><span class="fl">100</span>,</span>
 <span>                     cores<span class="op">=</span><span class="fl">2</span>,</span>
-<span>                     file<span class="op">=</span><span class="st">'no_tuning_mod'</span>,<span class="co">#have a care to remove this if you want to resample!</span></span>
+<span>                     <span class="co">#file='no_tuning_mod',#have a care to remove this if you want to resample!</span></span>
 <span>                     declare_all_data<span class="op">=</span><span class="cn">F</span>,</span>
 <span>                     messages<span class="op">=</span><span class="cn">F</span></span>
-<span>                   <span class="op">)</span></span></code></pre></div>
+<span>                   <span class="op">)</span></span>
+<span><span class="co">#&gt; Running MCMC with 2 parallel chains, with 1 thread(s) per chain...</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Chain 1 WARNING: There aren't enough warmup iterations to fit the </span></span>
+<span><span class="co">#&gt; Chain 1          three stages of adaptation as currently configured. </span></span>
+<span><span class="co">#&gt; Chain 1          Reducing each adaptation stage to 15%/75%/10% of </span></span>
+<span><span class="co">#&gt; Chain 1          the given number of warmup iterations: </span></span>
+<span><span class="co">#&gt; Chain 1            init_buffer = 7 </span></span>
+<span><span class="co">#&gt; Chain 1            adapt_window = 38 </span></span>
+<span><span class="co">#&gt; Chain 1            term_buffer = 5 </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration:  1 / 100 [  1%]  (Warmup)</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 1 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 1</span></span>
+<span><span class="co">#&gt; Chain 2 WARNING: There aren't enough warmup iterations to fit the </span></span>
+<span><span class="co">#&gt; Chain 2          three stages of adaptation as currently configured. </span></span>
+<span><span class="co">#&gt; Chain 2          Reducing each adaptation stage to 15%/75%/10% of </span></span>
+<span><span class="co">#&gt; Chain 2          the given number of warmup iterations: </span></span>
+<span><span class="co">#&gt; Chain 2            init_buffer = 7 </span></span>
+<span><span class="co">#&gt; Chain 2            adapt_window = 38 </span></span>
+<span><span class="co">#&gt; Chain 2            term_buffer = 5 </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration:  1 / 100 [  1%]  (Warmup)</span></span>
+<span><span class="co">#&gt; Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 2</span></span>
+<span><span class="co">#&gt; Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 2</span></span>
+<span><span class="co">#&gt; Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 2</span></span>
+<span><span class="co">#&gt; Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 2</span></span>
+<span><span class="co">#&gt; Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:</span></span>
+<span><span class="co">#&gt; Chain 2 Exception: normal_lpdf: Location parameter[1] is nan, but must be finite! (in 'C:/Users/loren/AppData/Local/Temp/RtmpKAfpwv/model-47cc62b161f.stan', line 49, column 4 to column 44)</span></span>
+<span><span class="co">#&gt; Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,</span></span>
+<span><span class="co">#&gt; Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.</span></span>
+<span><span class="co">#&gt; Chain 2</span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 51 / 100 [ 51%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 51 / 100 [ 51%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 Iteration: 100 / 100 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 1 Iteration: 100 / 100 [100%]  (Sampling) </span></span>
+<span><span class="co">#&gt; Chain 2 finished in 6.8 seconds.</span></span>
+<span><span class="co">#&gt; Chain 1 finished in 6.9 seconds.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Both chains finished successfully.</span></span>
+<span><span class="co">#&gt; Mean chain execution time: 6.9 seconds.</span></span>
+<span><span class="co">#&gt; Total execution time: 7.1 seconds.</span></span>
+<span><span class="co">#&gt; Warning: 87 of 100 (87.0%) transitions hit the maximum treedepth limit of 10.</span></span>
+<span><span class="co">#&gt; See https://mc-stan.org/misc/warnings for details.</span></span></code></pre></div>
 <p>a predict method for ulam objects is included in the mostlytidyMMM package</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_data</span><span class="op">$</span><span class="va">pred</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fitted_model_obj</span>,<span class="va">model_data</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span></span></code></pre></div>
