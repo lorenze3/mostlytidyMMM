@@ -50,7 +50,7 @@
 #' recipec <-recipeb |> step_mutate(week=as.numeric(week)-19247.65) |> 
 #'   update_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='time') |>
 #'   add_role(c(sin1,sin2,sin3,cos1,cos2,cos3),new_role='predictor')
-#' recipec<-recipec |> update_role(starts_with('x'),new_role='predictor')
+#' recipec<-recipec |> update_role(starts_with('V'),new_role='predictor')
 #'
 #' # build a model formula in the lmer style from the recipe:
 #' (formula_with_lotsa_vars<-create_formula(recipec))
