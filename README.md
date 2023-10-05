@@ -3,6 +3,9 @@
 
 # mostlytidyMMM
 
+<span style="color: red;"> **This is a pre-alpha release package! Assume
+none of it works correctly!** </span>
+
 <!-- badges: start -->
 
 [![Codecov test
@@ -160,7 +163,7 @@ statements:
                  grand_intercept_prior='normal(45,25)') )
 #> [[1]]
 #> sales ~ normal(big_model, big_sigma)
-#> <environment: 0x000000002d2cc4d8>
+#> <environment: 0x000000002d2bfcd8>
 #> 
 #> [[2]]
 #> big_model <- big_model_1 + a0 + store_int[store_id] + b_TV1_interact_store[store_id]
@@ -172,55 +175,55 @@ statements:
 #> 
 #> $b_TV1_interact_store
 #> b_TV1_interact_store[store_id] ~ normal(0, slope_sigma)
-#> <environment: 0x000000002d811b60>
+#> <environment: 0x000000002d803440>
 #> 
 #> $store
 #> store_int[store_id] ~ normal(65, int_sigma)
-#> <environment: 0x000000002d801688>
+#> <environment: 0x000000002d7f2f68>
 #> 
 #> $b_trend
 #> b_trend ~ normal(0, 10)
-#> <environment: 0x000000002d816490>
+#> <environment: 0x000000002d807d70>
 #> 
 #> $b_sin1
 #> b_sin1 ~ normal(0, 10)
-#> <environment: 0x000000002d816490>
+#> <environment: 0x000000002d807d70>
 #> 
 #> $b_cos1
 #> b_cos1 ~ normal(0, 10)
-#> <environment: 0x000000002d816490>
+#> <environment: 0x000000002d807d70>
 #> 
 #> $b_price
 #> b_price ~ normal(-20, 10)
-#> <environment: 0x000000002d67ece0>
+#> <environment: 0x000000002d670630>
 #> 
 #> $b_TV1
 #> b_TV1 ~ normal(6, 10)
-#> <environment: 0x000000002d68ddf8>
+#> <environment: 0x000000002d67b788>
 #> 
 #> $b_TV2
 #> b_TV2 ~ normal(6, 10)
-#> <environment: 0x000000002d68fa08>
+#> <environment: 0x000000002d6812e8>
 #> 
 #> $b_ProgVideo1
 #> b_ProgVideo1 ~ normal(2, 10)
-#> <environment: 0x000000002d691618>
+#> <environment: 0x000000002d682ef8>
 #> 
 #> [[13]]
 #> a0 ~ normal(45, 25)
-#> <environment: 0x000000002d2cc4d8>
+#> <environment: 0x000000002d2bfcd8>
 #> 
 #> [[14]]
 #> big_sigma ~ half_cauchy(0, 100)
-#> <environment: 0x000000002d2cc4d8>
+#> <environment: 0x000000002d2bfcd8>
 #> 
 #> [[15]]
 #> int_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d2cc4d8>
+#> <environment: 0x000000002d2bfcd8>
 #> 
 #> [[16]]
 #> slope_sigma ~ half_cauchy(0, 10)
-#> <environment: 0x000000002d2cc4d8>
+#> <environment: 0x000000002d2bfcd8>
 
 
 (bounds_for_ulam<-make_bound_statements(variable_controls=var_controls))
