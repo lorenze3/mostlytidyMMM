@@ -14,11 +14,11 @@
 #'
 #' @examples
 #'
-#' library(tidyverse)
-#' library(recipes)
-#' library(tune)
-#' library(dials)
-#' library(mostlytidyMMM)
+#' suppressMessages(suppressWarnings(library(tidyverse)))
+#' suppressMessages(suppressWarnings(library(recipes)))
+#' suppressMessages(suppressWarnings(library(tune)))
+#' suppressMessages(suppressWarnings(library(dials)))
+#' suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 #' #create two datasets:
 #' mktdata<-rbind(tibble(prod='brand',store='store1',
 #'                       sales=c(100.,100.,100.,100.,100.),
@@ -280,11 +280,11 @@ retention<-function(range=c(0,.8)){dials::new_quant_param(type='double',range=ra
 #'
 #' @examples
 #' #not run!
-#' library(tidyverse)
-#' library(recipes)
-#' library(tune)
-#' library(dials)
-#' library(mostlytidyMMM)
+#' suppressMessages(suppressWarnings(library(tidyverse)))
+#' suppressMessages(suppressWarnings(library(recipes)))
+#' suppressMessages(suppressWarnings(library(tune)))
+#' suppressMessages(suppressWarnings(library(dials)))
+#' suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 #'
 #' #create two datasets
 #' mktdata<-rbind(tibble(prod='brand',store='store1',

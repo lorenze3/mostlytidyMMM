@@ -15,11 +15,11 @@
 #' 
 #' @example
 #'
-#' library(tidyverse)
-#' library(mostlytidyMMM)
-#' library(recipes)
-#' library(dials)
-#' library(tune)
+#' suppressMessages(suppressWarnings(library(tidyverse)))
+#' suppressMessages(suppressWarnings(library(mostlytidyMMM)))
+#' suppressMessages(suppressWarnings(library(recipes)))
+#' suppressMessages(suppressWarnings(library(dials)))
+#' suppressMessages(suppressWarnings(library(tune)))
 #'
 #'
 #' #get control spreadsheet

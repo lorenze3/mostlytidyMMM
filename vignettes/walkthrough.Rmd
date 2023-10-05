@@ -1,8 +1,8 @@
 ---
-title: "get-started"
+title: "walkthrough"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{get-started}
+  %\VignetteIndexEntry{walkthrough}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,7 +24,10 @@ library(mostlytidyMMM)
 <!-- Store every call to library() that you need to explore your functions -->
 
 
-# custom recipe steps 
+# Custom recipe steps 
+
+These functions define adstock and saturation functions ($ f(x) = A*(1-e^{-k*x} $) for use in recipes (ie tidymodels pre-model transformation pipelines).
+
 
 <!--
 Create a chunk with an example of use for your function
@@ -43,11 +46,11 @@ After inflating the template
 
 ```{r examples-saturation}
 #not run!
-library(tidyverse)
-library(recipes)
-library(tune)
-library(dials)
-library(mostlytidyMMM)
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(recipes)))
+suppressMessages(suppressWarnings(library(tune)))
+suppressMessages(suppressWarnings(library(dials)))
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 
 #create two datasets
 mktdata<-rbind(tibble(prod='brand',store='store1',
@@ -97,11 +100,11 @@ After inflating the template
 
 
 ```{r examples-adstock}
-library(tidyverse)
-library(recipes)
-library(tune)
-library(dials)
-library(mostlytidyMMM)
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(recipes)))
+suppressMessages(suppressWarnings(library(tune)))
+suppressMessages(suppressWarnings(library(dials)))
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 #create two datasets:
 mktdata<-rbind(tibble(prod='brand',store='store1',
                       sales=c(100.,100.,100.,100.,100.),
@@ -140,14 +143,18 @@ bake(rec_both_steps,mktdata)
 
 ```
 
-# handling roles and steps in bulk
+# Handling Roles and Steps in Bulk
+
+It is not uncommon for a Marketing Mix Model to have dozens of variables.  The functions allow roles and media transformations (ie the adstock and saturation steps) to be applied based on the configuration tables.
+
+
 
 ```{r examples-working-with-recipes}
-library(tidyverse)
-library(mostlytidyMMM)
-library(recipes)
-library(dials)
-library(tune)
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
+suppressMessages(suppressWarnings(library(recipes)))
+suppressMessages(suppressWarnings(library(dials)))
+suppressMessages(suppressWarnings(library(tune)))
 
 
 #get control spreadsheet
@@ -169,12 +176,15 @@ recipe1
 
 # Creating rethinking::ulam inputs
 
+The ulam function generates a stan program and then runs sampling from it.  It is very flexible, giving a user access to most of what stan can do.  create_ulam_list() is a function that translates a lmer()-style formula into the requisite inputs for ulam.
+
+
 ```{r examples-rehtinking-ulam-related-functions}
-library(recipes)
-library(tune)
-library(dials)
-library(tidyverse)
-library(mostlytidyMMM)
+suppressMessages(suppressWarnings(library(recipes)))
+suppressMessages(suppressWarnings(library(tune)))
+suppressMessages(suppressWarnings(library(dials)))
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(mostlytidyMMM)))
 
 #get the control file:
 control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
@@ -184,26 +194,19 @@ transform_controls<-readxl::read_xlsx(control_file,'role controls')
 workflow_controls<-readxl::read_xlsx(control_file,"workflow") |> select(-desc)
 
 #pull data, add fourier transform columns
-data1=rename_columns_per_controls(read.csv(system.file("example2.csv", package = "mostlytidyMMM")),variable_controls=var_controls) |>  mutate(week=as.Date(week,"%m/%d/%Y")) |> 
-  mutate(across(c(product),as.factor)) |> group_by(product,store) |> arrange(product,store,week) |> 
-  mutate(day_int=as.numeric(week),
-         cos1=cos(2*pi*day_int/356),
-         cos2=cos(4*pi*day_int/356),
-         cos3 =cos(6*pi*day_int/356),
-         cos4 = cos(8*pi*day_int/356),
-         cos5 = cos(10*pi*day_int/356),
-         sin1=sin(2*pi*day_int/356),
-         sin2=sin(4*pi*day_int/356),
-         sin3=sin(6*pi*day_int/356),
-         sin4=sin(8*pi*day_int/356),
-         sin5=sin(10*pi*day_int/356)) |> select(-day_int) |> mutate(store=as.factor(store))
+
+data1<-read.csv(system.file('example2.csv',package='mostlytidyMMM'))|>rename_columns_per_controls(variable_controls=var_controls)|>
+  rename_columns_per_controls()|> mutate(week=as.Date(week,"%m/%d/%Y"))|>
+  add_fourier_vars(vc=var_controls) |>  add_groups_and_sort(vc=var_controls) 
 
 #append several more columns
 lotsa_vars<-paste0('x',1:60)
 new_x<-replicate(60,runif(nrow(data1))) 
 names(new_x)<-lotsa_vars
 new_x<-as_tibble(new_x)
+
 #bring the data together:
+
 data_for_lotsa_vars<-cbind(data1 ,new_x)
 
 #make recipes
@@ -222,15 +225,6 @@ recipec<-recipec |> update_role(starts_with('x'),new_role='predictor')
 (create_ulam_list(model_formula=formula_with_lotsa_vars))
 
 
+
 ```
-
-# Inflate your package
-
-You're one inflate from paper to box.
-Build your package from this very Rmd using `fusen::inflate()`
-
-- Verify your `"DESCRIPTION"` file has been updated
-- Verify your function is in `"R/"` directory
-- Verify your test is in `"tests/testthat/"` directory
-- Verify this Rmd appears in `"vignettes/"` directory
 

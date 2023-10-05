@@ -6,10 +6,10 @@ flat_full.Rmd:
   - R/make_bound_statements.R
   - R/step_saturation.R
   tests: tests/testthat/test-step_saturation.R
-  vignettes: vignettes/get-started.Rmd
+  vignettes: vignettes/walkthrough.Rmd
   inflate:
     flat_file: dev/flat_full.Rmd
-    vignette_name: get-started
+    vignette_name: walkthrough
     open_vignette: true
     check: true
     document: true
