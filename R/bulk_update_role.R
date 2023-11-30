@@ -221,6 +221,7 @@ add_fourier_vars<-function(data_to_use=data1,vc=var_controls){
 #' @importFrom dplyr across
 #' @importFrom dplyr all_of
 #' @importFrom dplyr arrange
+#' @importFrom dplyr group_by
 add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
   #extract groups from vc
   groupings<-vc |> filter(role2=='group') |> select(varname) |> unlist()
@@ -231,7 +232,7 @@ add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
     data_to_use<-data_to_use|> 
       mutate(across(all_of(!!groupings),as.factor))
     
-    return(data_to_use |>  group_by(across(all_of(groupings))) |> 
+    return(data_to_use |>  dplyr::group_by(across(all_of(groupings))) |> 
              arrange(across(all_of( c(!!groupings,!!time_id_var)))) )
   }
   else{

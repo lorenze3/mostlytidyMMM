@@ -188,13 +188,14 @@ prep.step_saturation <- function(x, training, info = NULL, ...) {
 #'@export bake.step_saturation
 #'
 #'@importFrom recipes bake
+#'@importFrom dplyr group_by
 bake.step_saturation<-function(object,new_data,...){
   vars<-names(object$hills)
   groupings<-as.character(groups(new_data))
   
   new_data[,vars]<-new_data[,object$hills] |> reframe(across(everything(),function(x){get_train_saturation(x,
                                                                                                             object$asymptote,object$saturation_speed)})) 
-  if(length(groupings)>0) {new_data<-as_tibble(new_data) |> group_by(across(all_of(groupings)))}
+  if(length(groupings)>0) {new_data<-as_tibble(new_data) |> dplyr::group_by(across(all_of(groupings)))}
   else{new_data<-as_tibble(new_data)}
   return(new_data)
   
@@ -519,7 +520,7 @@ bake.step_adstock<-function(object,new_data,...){
   
      #check if we have ragged time intervals
      new_data|>arrange(across(all_of(c(groupings,this_time)))) |>
-       group_by(across(all_of(groupings))) |>
+       dplyr::group_by(across(all_of(groupings))) |>
        mutate(lag_time=lag(across(all_of(this_time))))->intermediate
      intermediate$delta=as.numeric(unlist(intermediate$lag_time))-
        as.numeric(unlist(intermediate[this_time]))
@@ -528,7 +529,7 @@ bake.step_adstock<-function(object,new_data,...){
      if(nrow(problems)>0){
        rlang::abort('non-constant time intervals will not work with adstock')}
      
-  new_data<-new_data |>  group_by(across(all_of(groupings)))|> 
+  new_data<-new_data |>  dplyr::group_by(across(all_of(groupings)))|> 
     arrange(across(all_of(c(groupings,this_time))))
   
   
@@ -874,6 +875,7 @@ add_fourier_vars<-function(data_to_use=data1,vc=var_controls){
 #' @importFrom dplyr across
 #' @importFrom dplyr all_of
 #' @importFrom dplyr arrange
+#' @importFrom dplyr group_by
 add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
   #extract groups from vc
   groupings<-vc |> filter(role2=='group') |> select(varname) |> unlist()
@@ -884,7 +886,7 @@ add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
     data_to_use<-data_to_use|> 
       mutate(across(all_of(!!groupings),as.factor))
     
-    return(data_to_use |>  group_by(across(all_of(groupings))) |> 
+    return(data_to_use |>  dplyr::group_by(across(all_of(groupings))) |> 
              arrange(across(all_of( c(!!groupings,!!time_id_var)))) )
   }
   else{
@@ -1462,7 +1464,7 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
     list_of_configs=list(vc)
     formulae=list(create_formula(recipe_to_use,vc,ignore_rands=are_we_ignoring_rands))
     cat("Nota Bene: make_list_off_formulae is called but search_seaonality is FALSE")
-    return(formulae)
+    #return(formulae)
   }else{
     fft_interact_options<-get_control("interaction_fft") |> strsplit(split=',',fixed=T) |> unlist()
     if(!("" %in% fft_interact_options)){fft_interact_options=c("",fft_interact_options)}
@@ -1483,9 +1485,9 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
       }
     }
     formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
-  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
-  }
   
+  }
+  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
 }
 
 

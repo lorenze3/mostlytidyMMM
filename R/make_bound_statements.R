@@ -511,7 +511,7 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
     list_of_configs=list(vc)
     formulae=list(create_formula(recipe_to_use,vc,ignore_rands=are_we_ignoring_rands))
     cat("Nota Bene: make_list_off_formulae is called but search_seaonality is FALSE")
-    return(formulae)
+    #return(formulae)
   }else{
     fft_interact_options<-get_control("interaction_fft") |> strsplit(split=',',fixed=T) |> unlist()
     if(!("" %in% fft_interact_options)){fft_interact_options=c("",fft_interact_options)}
@@ -532,9 +532,9 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
       }
     }
     formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
-  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
-  }
   
+  }
+  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
 }
 
 

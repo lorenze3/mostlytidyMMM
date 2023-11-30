@@ -214,7 +214,7 @@ bake.step_adstock<-function(object,new_data,...){
   
      #check if we have ragged time intervals
      new_data|>arrange(across(all_of(c(groupings,this_time)))) |>
-       group_by(across(all_of(groupings))) |>
+       dplyr::group_by(across(all_of(groupings))) |>
        mutate(lag_time=lag(across(all_of(this_time))))->intermediate
      intermediate$delta=as.numeric(unlist(intermediate$lag_time))-
        as.numeric(unlist(intermediate[this_time]))
@@ -223,7 +223,7 @@ bake.step_adstock<-function(object,new_data,...){
      if(nrow(problems)>0){
        rlang::abort('non-constant time intervals will not work with adstock')}
      
-  new_data<-new_data |>  group_by(across(all_of(groupings)))|> 
+  new_data<-new_data |>  dplyr::group_by(across(all_of(groupings)))|> 
     arrange(across(all_of(c(groupings,this_time))))
   
   
@@ -481,13 +481,14 @@ prep.step_saturation <- function(x, training, info = NULL, ...) {
 #' @export bake.step_saturation
 #'
 #' @importFrom recipes bake
+#' @importFrom dplyr group_by
 bake.step_saturation<-function(object,new_data,...){
   vars<-names(object$hills)
   groupings<-as.character(groups(new_data))
   
   new_data[,vars]<-new_data[,object$hills] |> reframe(across(everything(),function(x){get_train_saturation(x,
                                                                                                             object$asymptote,object$saturation_speed)})) 
-  if(length(groupings)>0) {new_data<-as_tibble(new_data) |> group_by(across(all_of(groupings)))}
+  if(length(groupings)>0) {new_data<-as_tibble(new_data) |> dplyr::group_by(across(all_of(groupings)))}
   else{new_data<-as_tibble(new_data)}
   return(new_data)
   
