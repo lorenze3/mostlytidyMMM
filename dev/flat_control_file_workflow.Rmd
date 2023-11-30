@@ -1,0 +1,31 @@
+---
+title: "Introducing the Control File: Workflow tab"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+Introducing the Control File
+
+mostlytidyMMM envisions working with a pre-built MMM data table (ie we left the hard part out of  *this* package!) and, perhaps, the analyst not needing to write any modelling or transformation code.
+
+This leaves the analyst free to focus on setting priors and judging models based on output alone, instead of focusing on getting their code to run.  And, perhaps, adds to the repeatability of MMM building.
+
+To enable a low code MMM building experience, the package is intended to run off of a configuration or control file.  This file can be replaced with data.frames, of course, and the values might be passed through a web-app front end at some point . . .
+
+But for the start, let's pull the file from the package and copy it to the the working directory for review (assuming you have a program to read .xlsx files installed):
+
+
+
+```{r examples-introducing_control_file}
+control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
+file.copy(control_file,'example.xlsx',overwrite=T)
+
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_control_file_workflow.Rmd", vignette_name = "Go further")
+```
+

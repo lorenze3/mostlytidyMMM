@@ -511,6 +511,7 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
     list_of_configs=list(vc)
     formulae=list(create_formula(recipe_to_use,vc,ignore_rands=are_we_ignoring_rands))
     cat("Nota Bene: make_list_off_formulae is called but search_seaonality is FALSE")
+    return(formulae)
   }else{
     fft_interact_options<-get_control("interaction_fft") |> strsplit(split=',',fixed=T) |> unlist()
     if(!("" %in% fft_interact_options)){fft_interact_options=c("",fft_interact_options)}
@@ -530,9 +531,10 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
         list_of_configs[[idx]]=this_vc
       }
     }
-  }
-  formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
+    formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
   return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
+  }
+  
 }
 
 
@@ -632,7 +634,12 @@ update_range_from_control<-function(parameter_set,controls){
   return(parameter_set)
 }
 
-create_dials_from_wf_and_controls<-function(workflow=mmm_wf,control_ranges=transform_controls){
+#'Sets hyperparameter ranges for tune grid
+#' @param workflow model workflow ore recipe, defaults to recipe3
+#' @param control_ranges defaults to transform_controls; a df with ranges by role2 of variable
+#' @export
+#'
+create_dials_from_wf_and_controls<-function(workflow=recipe3,control_ranges=transform_controls){
   tune_these_parms<-extract_parameter_set_dials(workflow) #will have default ranges
   if(nrow(tune_these_parms)==0){return(tune_these_parms)}
   #get ranges from transform_controls

@@ -1,0 +1,100 @@
+---
+title: "The Control File: Variables"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# Introducing the Control File
+
+mostlytidyMMM envisions working with a pre-built MMM data table (ie we left the hard part out of  *this* package!) and, perhaps, the analyst not needing to write any modelling or transformation code.
+
+This leaves the analyst free to focus on setting priors and judging models based on output alone, instead of focusing on getting their code to run.  And, perhaps, adds to the repeatability of MMM building.
+
+To enable a low code MMM building experience, the package is intended to run off of a configuration or control file.  This file can be replaced with data.frames, of course, and the values might be passed through a web-app front end at some point . . .
+
+But for the start, let's pull the file from the package and copy it to the the working directory for review (assuming you have a program to read .xlsx files installed):
+
+
+
+```{r examples-introducing_control_file}
+control_file<-system.file('example model control.xlsx',package='mostlytidyMMM')
+file.copy(control_file,'example.xlsx',overwrite=T)
+
+```
+
+
+## variables tab
+The second tab, but the best place to start, `variables` controls information about individual columns in the data, and model estimates related to those columns.
+
+A quick peek at what is included:
+```{r examples1}
+variables<-readxl::read_xlsx(control_file,'variables')
+
+head(variables)
+
+```
+
+### Renaming: `start_name` and `varname`
+
+The first two variables allow for renaming incoming variables for the rest of the process. Incoming names are in the `start_name` column; names for use in the modelling process are in the `varname` column.
+
+This is useful when upstream data creation process has generated long names or names that are less than ideal for R tidyverse manipulation (ie it might be best to remove ., spaces, and not to start with a number).
+
+### What is the variable for: `role` and `role2`
+
+The next two variables `role` and `role2`, and are used to inform the model of how to use each variable.  
+
+`role` has 4 useful values: $ {'predictor', 'time_id', 'outcome', 'postprocess'} $, and the first 3 of those are required (ie at least one record for each must be in the control file).  Only one record may have a role of 'outcome'.  Only one record may have a `role` of 'time_id'.  Records with value 'postprocess' are excluded from the modeling analysis set.
+
+The varname with `role` == 'time_id' will be used by the `step_adstock()` functions to sort incoming data to ensure adstock is correclty calculated.
+
+`role2` is used primarily to indicate which 'channel' a variable belongs to so that varname belongs to. varnames in the same channel will get the same hyperparameter transformation (as specified on the `role control` tab) unless a varname specific transformation is assigned in the columns to be discussed below.  If `role2` == 'group', that indicates that the varname is a categorical variable that will be coerced to factor (and available for randome effect specification).  `role2`== 'time' will prevent the predictor from being included in every model (some additional functions may include these variables, but by default they are excluded from the model formula).
+
+### User assigned priors: `prior` and `prior_sd`
+
+mostlytidyMMM employs bayesian regression for its final models and requires a prior distribution for each parameter to be estimated (*welp*, for which a posterior distribution will be estimated).  The process will assign a diffuse prior if the analyst doesn't have a clear prior in mind.  But for marketing variables, it is assumed the analyst will have some informed, and information, prior distribution mind.
+
+Currently mostlytidyMMM uses normal priors on these coefficients, and `prior` and `prior_sd` hold the mean and standard deviation of the priors for each variable. 
+
+If none are specified, the mostlytidyMMM will assign `normal(0,10)` as the prior.
+
+### Constraints: `sign`
+
+MMM commonly have drivers of known sign.  Typically, price variables will have a known negative sign and marketing drivers will be known to have a positive sign.  mostlytidyMMM allows for sign constrained estimation of the final model and this is controlled by `sign`.  Entries in this column should be one of: '<=0','+', '>=0','-'.  
+
+**NB:** the model currently always includes 0 in the constraint regardless of how it is specified.
+
+**NB:** at this point, only bounding at 0 is allowed.  Ie <=7 will not function. *this is likely to change!*
+
+### Media Transformations: `retention`,`asymptote`, and `saturation_speed`
+
+mostlytidyMMM applies adstock and saturation transformations to 'media' variables.  The process knows if something is a media variable _if_ the `retention`, `asymptote`, or `saturation_speed` values on the `variables` tab are assigned **or** if the value of `role2` maps to a record on the `role controls` tab **and** `role` == 'predictor'.
+
+That's a confusing set of conditions to read but in practice it means the variable has to be a predictor and has to have an assignment for these three hyperparameters, either directly in the `variables` tab or on the `role controls` tab through the value of `role2`.
+
+`retention` is the amount of carryover from the previous time period.  I.e., if `retention`==.5 then the halflife of the driver is 1 time period.
+
+`asymptote` defines the limit of the value of the reach transform as the driver approaches infinity.  
+
+`saturation_speed` determines how quickly the asymptote is approached in the saturation function.
+
+If the `saturation_speed` is such that the saturation function is near to it's asymptote within the historical data, then the value of asymptote becomes a scaling factor on the coefficient (and therefore on the prior that should be offered).  
+
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_introducing_control_file.Rmd", vignette_name = "The Control File")
+```
+
