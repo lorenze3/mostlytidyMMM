@@ -532,9 +532,10 @@ make_list_of_fft_formulae<-function(vc=workflow_controls,recipe_to_use=recipe3){
       }
     }
     formulae<-lapply(list_of_configs,function(x) create_formula(recipe_to_use,x,ignore_rands = are_we_ignoring_rands))
-  
+    formulae=formulae[-1]
+    list_of_configs=list_of_configs[-1]
   }
-  return(list(formulae=formulae[-1],configs=list_of_configs[-1]))
+  return(list(formulae=formulae,configs=list_of_configs))
 }
 
 
