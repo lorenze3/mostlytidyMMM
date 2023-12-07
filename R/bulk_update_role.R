@@ -187,11 +187,13 @@ rename_columns_per_controls<-function(working_df,variable_controls=var_controls)
 add_fourier_vars<-function(data_to_use=data1,vc=var_controls){
   time_id_var <-vc|> filter(role=='time_id') |> select(varname) |> unlist()
   
-  time_id_vec<-data_to_use |> select(all_of(time_id_var)) |> unlist()
-  if(!is.numeric(time_id_vec)){stop("non numeric vector used as time_id var.  
-                                  For variable set as time_id var (ie where role=time_id), please reset it to be a date or number representing a date ")}
+  time_id_vec<-data_to_use |> ungroup() |> select(all_of(time_id_var)) |> unlist()
+  if( !is.Date(time_id_vec) &  ! is.numeric(time_id_vec)){stop("non date vector used as time_id var.  
+                                  For variable set as time_id var (ie where role=time_id), please reset it to be a date  ")}
   
-  data_to_use$day_int=time_id_vec
+  if(is.Date(time_id_vec)){data_to_use$day_int=lubridate::yday(time_id_vec)}else{
+    data_to_use$day_int=time_id_vec
+  }
   return(data_to_use |> mutate(cos1=cos(2*pi*day_int/356),
                                 cos2=cos(4*pi*day_int/356),
                                 cos3 =cos(6*pi*day_int/356),
