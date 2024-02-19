@@ -896,6 +896,48 @@ add_groups_and_sort<-function(data_to_use=data1,vc=var_controls){
            ) }
 }
 
+#' checks random terms in workflow_control against data; if fewer than 2 levels for the groups, removes the random terms from search
+#' 
+#' @param data_of_interest  defaults to data1;  a tibble or tidytable suitable for MMM and matching the 
+#' variables listed in vc (the variable congtrol table)
+#' @param workflow_controls defaults to workflow_controls; a tibble with Value and R_name describing
+#' the various model search options
+#' @export
+#' @return
+#' a tibble 
+adjust_workflow_for_groups_not_in_data<-function(workflow_controls=workflow_controls,data_of_interest=data1){
+  all_random_terms <- workflow_controls |> filter(R_name %in% c('list_rand_ints','list_rand_slopes')) |> select(Value) |> unlist() |> paste(collapse=',')
+  
+  #a vector of possible grouping_terms
+  grouping_terms <- unique(gsub(")","",gsub("|","", stringr::str_extract_all(all_random_terms,"\\|.+?\\)")[[1]],fixed=T),fixed=T))
+  #check if at least two values in data for each terms
+  grp_to_remove=vector(mode='character')
+  for (gg in 1:length(grouping_terms)){
+   
+    if(length(unique(data_of_interest[grouping_terms[gg]]))<2){  
+      grp_to_remove<-c(grp_to_remove,grouping_terms[gg]) }
+  }
+  ##Need to remove the rand terms that have any of the grp_to_remove values frmo the workflow_controls list_rand_ints or list_rand_slopes
+  if (length(grp_to_remove)>0){
+    for (gg in 1: length(grp_to_remove)){
+      this_grp<-grp_to_remove[gg]
+      slope_terms <- strsplit(workflow_controls$Value[workflow_controls$R_name=='list_rand_slopes'],',')[[1]]#because workflow_controls$Value is length 1
+      slope_terms2<-paste0(slope_terms[!(stringr::str_detect(slope_terms,this_grp))],collapse=',')
+      workflow_controls$Value[workflow_controls$R_name=='list_rand_slopes']<-slope_terms2
+      
+      int_terms <- strsplit(workflow_controls$Value[workflow_controls$R_name=='list_rand_ints'],',')[[1]]#because workflow_controls$Value is length 1
+      int_terms2<-paste0(int_terms[!(stringr::str_detect(int_terms,this_grp))],collapse=',')
+      workflow_controls$Value[workflow_controls$R_name=='list_rand_ints']<-int_terms2
+    }
+  }
+  #cancel search of random terms if they are now blank
+  if ( workflow_controls$Value[workflow_controls$R_name=='list_rand_ints']=='' &  workflow_controls$Value[workflow_controls$R_name=='list_rand_ints']==''){
+    workflow_controls$Value[workflow_controls$R_name=='search_randoms']<-FALSE
+  }
+  return(workflow_controls)
+}
+
+
 #'check to see if a recipe needs to be finalized before baking
 #'
 #'@param recipe_to_check a recipe
